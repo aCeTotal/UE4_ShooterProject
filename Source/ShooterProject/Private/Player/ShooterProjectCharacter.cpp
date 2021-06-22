@@ -95,6 +95,7 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
+
 void AShooterProjectCharacter::SetLootSource(UInventoryComponent* NewLootSource)
 {
 	//If the item we're looting gets destroyed, we need to tell the client to remove their loot screen
@@ -112,6 +113,8 @@ void AShooterProjectCharacter::SetLootSource(UInventoryComponent* NewLootSource)
 				Character->SetLifeSpan(120.f);
 			}
 		}
+		
+		LootSource = NewLootSource;
 	}
 	else
 	{
