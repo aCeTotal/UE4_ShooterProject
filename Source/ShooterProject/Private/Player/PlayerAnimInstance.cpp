@@ -9,10 +9,11 @@
 
 UPlayerAnimInstance::UPlayerAnimInstance()
 {
-	IsInAir = false;
+	bIsInAir = false;
 	Speed = 0.f;
 	Direction = 0.f;
 }
+
 
 void UPlayerAnimInstance::NativeInitializeAnimation()
 {
@@ -21,6 +22,7 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 	// Cache pawn
 	Owner = TryGetPawnOwner();
 }
+
 
 void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
@@ -37,7 +39,9 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		AShooterProjectCharacter* PlayerCharacter = Cast<AShooterProjectCharacter>(Owner);
 		if (PlayerCharacter)
 		{
-			IsInAir = PlayerCharacter->GetMovementComponent()->IsFalling();
+			
+			bIsInAir = PlayerCharacter->GetMovementComponent()->IsFalling();
+			bIsLocallyControlled = PlayerCharacter->IsLocallyControlled();
 			Speed = PlayerCharacter->GetVelocity().Size();
 			Velocity = PlayerCharacter->GetVelocity();
 			ActorRotation = PlayerCharacter->GetActorRotation();
@@ -51,6 +55,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		}
 	}
 }
+
 
 //Calculate direction
 float UPlayerAnimInstance::CalculateDirection(const FVector& PlayerVelocity, const FRotator& PlayerRotation) const

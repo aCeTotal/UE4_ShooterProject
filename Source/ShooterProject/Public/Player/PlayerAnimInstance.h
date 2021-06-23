@@ -17,7 +17,10 @@ class SHOOTERPROJECT_API UPlayerAnimInstance : public UAnimInstance
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	bool IsInAir;
+	bool bIsInAir;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bIsLocallyControlled;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	float Speed;
@@ -54,5 +57,6 @@ public:
 
 private:
 
+	UPROPERTY()
 	APawn* Owner;
 };
