@@ -258,6 +258,27 @@ protected:
 	void StartProning();
 	void StopProning();
 
+	UPROPERTY(ReplicatedUsing = OnRep_Health, BlueprintReadOnly, Category = "Health")
+	float Health;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	float MaxHealth;
+
+public:
+
+	//Modify the players health by either a negative or positive amount. Return the amount of health actually removed.
+	float ModifyHealth(const float Delta);
+
+	UFUNCTION()
+	void OnRep_Health(float OldHealth);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnHealthModified(const float HealthDelta);
+
+
+
+protected:
+
 
 	AWeaponClass* CurrentWeapon;
 

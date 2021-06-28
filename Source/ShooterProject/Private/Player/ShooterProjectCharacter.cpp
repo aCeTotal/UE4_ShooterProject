@@ -31,6 +31,9 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+
+	MaxHealth = 100.f;
+	Health = MaxHealth;
 	
 
 	// set the character speed
@@ -241,6 +244,8 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AShooterProjectCharacter, LootSource);
+	DOREPLIFETIME(AShooterProjectCharacter, Health);
+	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
 }
 
 
@@ -676,6 +681,20 @@ void AShooterProjectCharacter::StartProning()
 void AShooterProjectCharacter::StopProning()
 {
 	CurrentState = EPawnStates::STAND;
+}
+
+float AShooterProjectCharacter::ModifyHealth(const float Delta)
+{
+	const float OldHealth = Health;
+
+	Health = FMath::Clamp<float>(Health + Delta, 0.f, MaxHealth);
+
+	return Health - OldHealth;
+}
+
+void AShooterProjectCharacter::OnRep_Health(float OldHealth)
+{
+	OnHealthModified(Health - OldHealth);
 }
 
 
