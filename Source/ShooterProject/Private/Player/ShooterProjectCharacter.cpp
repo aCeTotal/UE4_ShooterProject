@@ -23,23 +23,22 @@
 
 AShooterProjectCharacter::AShooterProjectCharacter()
 {
-
-
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
-
-	MaxHealth = 100.f;
-	Health = MaxHealth;
 	
+	//Set Health
+	MaxHealth = 100.f;
+	Health = MaxHealth;	
 
 	// set the character speed
 	Runningspeed = 450.f;
 	Sprintingspeed = 600.f;
 
+	//Sets Interaction Distance and Frequency
 	InteractionCheckFrequency = 0.f;
 	InteractionCheckDistance = 1000.f;
 
