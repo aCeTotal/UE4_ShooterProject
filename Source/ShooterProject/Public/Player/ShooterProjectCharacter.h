@@ -7,6 +7,7 @@
 #include "Items/EquippableItem.h"
 #include "ShooterProjectCharacter.generated.h"
 
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEquippedItemsChanged, const EEquippableSlot, Slot, const UEquippableItem*, Item);
 
 class AWeaponClass;
@@ -131,6 +132,10 @@ public:
 	/**Our player inventory */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	class UInventoryComponent* PlayerInventory;
+
+	/**Interaction component used to allow other players to loot us when we have died*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	class UInteractionComponent* LootPlayerInteraction;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -279,11 +284,46 @@ public:
 
 protected:
 
+	void StartFire();
+	void StopFire();
 
-	AWeaponClass* CurrentWeapon;
+	void BeginMeleeAttach();
+
+	UFUNCTION(Server, Reliable)
+	void ServerProcessMeleeHit(const FHitResult& MeleeHit);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayMeleeFX();
+
+	//MeleeAttach
+	UPROPERTY()
+	float LastMeleeAttackTime;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Melee)
+	float MeleeAttachDistance;
+
+	UPROPERTY(EditDefaultsOnly, Category = Melee)
+	float MeleeAttachDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Melee)
+	TSubclassOf<class UDamageType> MeleeDamageType;
+
+	UPROPERTY(EditDefaultsOnly, Category = Melee)
+	class UAnimMontage* MeleeAttackMontage;
 
 
-	void Fire();
+	//Called when killed by a player, or killed by something else like the environment
+	void Suicide(struct FDamageEvent const& DamageEvent, const AActor* DamageCauser);
+	void KilledByPlayer(struct FDamageEvent const& DamageEvent, const class AShooterProjectPlayerController* EventInstigator, const AActor* DamageCauser);
+
+	UPROPERTY(ReplicatedUsing = OnRep_Killer)
+	class AShooterProjectCharacter* Killer;
+
+	UFUNCTION()
+	void OnRep_Killer();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDeath();
 
 
 	// Function used for selecting the next pawn stance in AnimBP.
@@ -330,6 +370,7 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void Restart() override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
 	/** Returns CameraBoom subobject **/

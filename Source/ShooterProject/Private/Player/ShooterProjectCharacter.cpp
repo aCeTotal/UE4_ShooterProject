@@ -10,13 +10,20 @@
 #include "Components/InventoryComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/PlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Items/EquippableItem.h"
 #include "Items/GearItem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstance.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/RepLayout.h"
+#include "Particles/Collision/ParticleModuleCollisionGPU.h"
 #include "Player/ShooterProjectPlayerController.h"
+#include "ShooterProject/ShooterProject.h"
 #include "World/Pickup.h"
+
+#define LOCTEXT_NAMESPACE "ShooterProjectCharacter"
 
 //////////////////////////////////////////////////////////////////////////
 // AShooterProjectCharacter
@@ -58,6 +65,14 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>("PlayerInventory");
 	PlayerInventory->SetCapacity(20);
 	PlayerInventory->SetWeightCapacity(80.f);
+
+	
+	LootPlayerInteraction = CreateDefaultSubobject<UInteractionComponent>("PlayerInteraction");
+	LootPlayerInteraction->InteractibleActionText = LOCTEXT("LootPlayerText", "Loot");
+	LootPlayerInteraction->InteractibleNameText = LOCTEXT("LootPlayerName", "Player");
+	LootPlayerInteraction->SetupAttachment(GetRootComponent());
+	LootPlayerInteraction->SetActive(false, true);
+	LootPlayerInteraction->bAutoActivate = false;
 
 	// Create a camera boom and attach it to Head socket.
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -218,6 +233,15 @@ void AShooterProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Bind interact to BeginLooting-function that sets Player Inventory as the LootSource.
+	LootPlayerInteraction->OnInteract.AddDynamic(this, &AShooterProjectCharacter::BeginLootingPlayer);
+
+	//Try to display the players platform name on their loot card
+	if (APlayerState* PS = GetPlayerState())
+	{
+		LootPlayerInteraction->SetInteractableText(FText::FromString(PS->GetPlayerName()));
+	}
+
 	//When the player spawns in, they have no items equipped, so cache thise items (That way, if a player uneqipps an item we can set the mesh back to the standard
 	for (auto& PlayerMesh : PlayerMeshes)
 	{
@@ -258,6 +282,12 @@ void AShooterProjectCharacter::Restart()
 	}
 }
 
+float AShooterProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -265,6 +295,9 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AShooterProjectCharacter::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AShooterProjectCharacter::StopFire);
+	
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
@@ -276,8 +309,6 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	PlayerInputComponent->BindAction("Prone", IE_Pressed, this, &AShooterProjectCharacter::StartProning);
 	PlayerInputComponent->BindAction("Prone", IE_Released, this, &AShooterProjectCharacter::StopProning);
-
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AShooterProjectCharacter::Fire);
 
 	PlayerInputComponent->BindAction("NextStance", IE_Pressed, this, &AShooterProjectCharacter::NextPawnState);
 	PlayerInputComponent->BindAction("PrevStance", IE_Pressed, this, &AShooterProjectCharacter::PrevPawnState);
@@ -696,9 +727,120 @@ void AShooterProjectCharacter::OnRep_Health(float OldHealth)
 	OnHealthModified(Health - OldHealth);
 }
 
-
-void AShooterProjectCharacter::Fire()
+void AShooterProjectCharacter::StartFire()
 {
+	BeginMeleeAttach();
+}
+
+void AShooterProjectCharacter::StopFire()
+{
+	
+}
+
+void AShooterProjectCharacter::BeginMeleeAttach()
+{
+	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
+	{
+		FHitResult Hit;
+		FCollisionShape Shape = FCollisionShape::MakeSphere(15.f);
+		
+		FVector StartTrace = FollowCamera->GetComponentLocation();
+		FVector EndTrace = (FollowCamera->GetComponentRotation().Vector() * MeleeAttachDistance) + StartTrace;
+
+		FCollisionQueryParams QueryParams = FCollisionQueryParams("MeleeSweep", false, this);
+
+		PlayAnimMontage(MeleeAttackMontage);
+
+		if (GetWorld()->SweepSingleByChannel(Hit, StartTrace, EndTrace, FQuat(), COLLISION_WEAPON, Shape, QueryParams))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("We hit something!"));
+			if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(Hit.GetActor()))
+			{
+				if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(GetController()))
+				{
+					PC->OnHitPlayer();
+				}
+			}
+		}
+
+		ServerProcessMeleeHit(Hit);
+
+		LastMeleeAttackTime = GetWorld()->GetTimeSeconds();
+	}
+}
+
+void AShooterProjectCharacter::ServerProcessMeleeHit_Implementation(const FHitResult& MeleeHit)
+{
+	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
+	{
+		MulticastPlayMeleeFX();
+
+		if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(MeleeHit.GetActor()))
+		{
+			UGameplayStatics::ApplyPointDamage(HitPlayer, MeleeAttachDamage, (MeleeHit.TraceStart - MeleeHit.TraceEnd).GetSafeNormal(), MeleeHit, GetController(), this, MeleeDamageType);
+		}
+	}
+	
+	LastMeleeAttackTime = GetWorld()->GetDeltaSeconds();
+}
+
+void AShooterProjectCharacter::MulticastPlayMeleeFX_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		PlayAnimMontage(MeleeAttackMontage);
+	}
+}
+
+void AShooterProjectCharacter::Suicide(FDamageEvent const& DamageEvent, const AActor* DamageCauser)
+{
+	Killer = this;
+	OnRep_Killer();
+}
+
+void AShooterProjectCharacter::KilledByPlayer(FDamageEvent const& DamageEvent, const AShooterProjectPlayerController* EventInstigator, const AActor* DamageCauser)
+{
+	Killer = Cast<AShooterProjectCharacter>(EventInstigator->GetPawn());
+	OnRep_Killer();
+}
+
+
+void AShooterProjectCharacter::OnRep_Killer()
+{
+	//Remove player from World after 20 seconds
+	SetLifeSpan(20.f);
+
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SetReplicateMovement(false);
+
+	TurnOff();
+
+	//Activates Looting after player is dead
+	LootPlayerInteraction->Activate();
+
+	//Unequip all equipped items so they can be looted
+	if (HasAuthority())
+	{
+		TArray<UEquippableItem*> Equippables;
+		EquippedItems.GenerateValueArray(Equippables);
+
+		for (auto& EquippedItem : Equippables)
+		{
+			EquippedItem->SetEquipped(false);
+		}
+	}
+	//Show Deathscreen
+	if (IsLocallyControlled())
+	{
+		if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(GetController()))
+		{
+			PC->ShowDeathScreen(Killer);
+		}
+	}
 }
 
 
@@ -797,3 +939,5 @@ void AShooterProjectCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+#undef LOCTEXT_NAMESPACE
