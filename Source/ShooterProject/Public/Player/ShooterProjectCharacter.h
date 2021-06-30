@@ -287,7 +287,7 @@ protected:
 	void StartFire();
 	void StopFire();
 
-	void BeginMeleeAttach();
+	void BeginMeleeAttack();
 
 	UFUNCTION(Server, Reliable)
 	void ServerProcessMeleeHit(const FHitResult& MeleeHit);
@@ -300,10 +300,10 @@ protected:
 	float LastMeleeAttackTime;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Melee)
-	float MeleeAttachDistance;
+	float MeleeAttackDistance;
 
 	UPROPERTY(EditDefaultsOnly, Category = Melee)
-	float MeleeAttachDamage;
+	float MeleeAttackDamage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Melee)
 	TSubclassOf<class UDamageType> MeleeDamageType;
@@ -314,7 +314,7 @@ protected:
 
 	//Called when killed by a player, or killed by something else like the environment
 	void Suicide(struct FDamageEvent const& DamageEvent, const AActor* DamageCauser);
-	void KilledByPlayer(struct FDamageEvent const& DamageEvent, const class AShooterProjectPlayerController* EventInstigator, const AActor* DamageCauser);
+	void KilledByPlayer(struct FDamageEvent const& DamageEvent, class AShooterProjectCharacter* Character, const AActor* DamageCauser);
 
 	UPROPERTY(ReplicatedUsing = OnRep_Killer)
 	class AShooterProjectCharacter* Killer;
