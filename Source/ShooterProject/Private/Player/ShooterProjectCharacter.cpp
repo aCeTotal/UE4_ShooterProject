@@ -286,6 +286,8 @@ float AShooterProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent cons
 	AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	return DamageAmount;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -739,34 +741,13 @@ void AShooterProjectCharacter::StopFire()
 
 void AShooterProjectCharacter::BeginMeleeAttach()
 {
-	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
-	{
-		FHitResult Hit;
-		FCollisionShape Shape = FCollisionShape::MakeSphere(15.f);
-		
-		FVector StartTrace = FollowCamera->GetComponentLocation();
-		FVector EndTrace = (FollowCamera->GetComponentRotation().Vector() * MeleeAttachDistance) + StartTrace;
+	//Generate a random number between 1 and 2.
+	int MontageSectionIndex = rand() % 3 + 1;
 
-		FCollisionQueryParams QueryParams = FCollisionQueryParams("MeleeSweep", false, this);
-
-		PlayAnimMontage(MeleeAttackMontage);
-
-		if (GetWorld()->SweepSingleByChannel(Hit, StartTrace, EndTrace, FQuat(), COLLISION_WEAPON, Shape, QueryParams))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("We hit something!"));
-			if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(Hit.GetActor()))
-			{
-				if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(GetController()))
-				{
-					PC->OnHitPlayer();
-				}
-			}
-		}
-
-		ServerProcessMeleeHit(Hit);
-
-		LastMeleeAttackTime = GetWorld()->GetTimeSeconds();
-	}
+	// Fstring animation Section
+	FString MontageSection = "start_" + FString::FromInt(MontageSectionIndex);
+	
+	PlayAnimMontage(MeleeFistAttackMontage, 1.f, FName(*MontageSection));
 }
 
 void AShooterProjectCharacter::ServerProcessMeleeHit_Implementation(const FHitResult& MeleeHit)
