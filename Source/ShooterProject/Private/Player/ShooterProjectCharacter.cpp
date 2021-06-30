@@ -65,7 +65,6 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>("PlayerInventory");
 	PlayerInventory->SetCapacity(20);
 	PlayerInventory->SetWeightCapacity(80.f);
-
 	
 	LootPlayerInteraction = CreateDefaultSubobject<UInteractionComponent>("PlayerInteraction");
 	LootPlayerInteraction->InteractibleActionText = LOCTEXT("LootPlayerText", "Loot");
@@ -282,12 +281,27 @@ void AShooterProjectCharacter::Restart()
 	}
 }
 
-float AShooterProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
-	AController* EventInstigator, AActor* DamageCauser)
+float AShooterProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	return DamageAmount;
+	const float DamageDealt = ModifyHealth(-DamageAmount);
+
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "TakeDamage function");
+
+	if (Health <= 0.f)
+	{
+		if (AShooterProjectCharacter* KillerCharacter = Cast<AShooterProjectCharacter>(DamageCauser->GetOwner()))
+		{
+			KilledByPlayer(DamageEvent, KillerCharacter, DamageCauser);
+		}
+		else
+		{
+			Suicide(DamageEvent, DamageCauser);
+		}			
+	}
+
+	return DamageDealt;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -731,7 +745,7 @@ void AShooterProjectCharacter::OnRep_Health(float OldHealth)
 
 void AShooterProjectCharacter::StartFire()
 {
-	BeginMeleeAttach();
+	BeginMeleeAttack();
 }
 
 void AShooterProjectCharacter::StopFire()
@@ -739,30 +753,46 @@ void AShooterProjectCharacter::StopFire()
 	
 }
 
-void AShooterProjectCharacter::BeginMeleeAttach()
+void AShooterProjectCharacter::BeginMeleeAttack()
 {
-	//Generate a random number between 1 and 2.
-	int MontageSectionIndex = rand() % 3 + 1;
+	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
+	{
+		FHitResult Hit;
+		FCollisionShape Shape = FCollisionShape::MakeSphere(15.f);
 
-	// Fstring animation Section
-	FString MontageSection = "start_" + FString::FromInt(MontageSectionIndex);
-	
-	PlayAnimMontage(MeleeFistAttackMontage, 1.f, FName(*MontageSection));
+		FVector StartTrace = FollowCamera->GetComponentLocation();
+		FVector EndTrace = (FollowCamera->GetComponentRotation().Vector() * MeleeAttackDistance) + StartTrace;
+
+		FCollisionQueryParams QueryParams = FCollisionQueryParams("MeleeSweep", false, this);
+
+		PlayAnimMontage(MeleeAttackMontage);
+
+		if (GetWorld()->SweepSingleByChannel(Hit, StartTrace, EndTrace, FQuat(), COLLISION_WEAPON, Shape, QueryParams))
+		{
+			if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(Hit.GetActor()))
+			{
+				if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(GetController()))
+				{
+					PC->OnHitPlayer();
+				}
+			}
+		}
+
+		ServerProcessMeleeHit(Hit);
+
+		LastMeleeAttackTime = GetWorld()->GetTimeSeconds();
+	}
 }
 
 void AShooterProjectCharacter::ServerProcessMeleeHit_Implementation(const FHitResult& MeleeHit)
 {
-	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
+	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength() && (GetActorLocation() - MeleeHit.ImpactPoint).Size() <= MeleeAttackDistance)
 	{
 		MulticastPlayMeleeFX();
 
-		if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(MeleeHit.GetActor()))
-		{
-			UGameplayStatics::ApplyPointDamage(HitPlayer, MeleeAttachDamage, (MeleeHit.TraceStart - MeleeHit.TraceEnd).GetSafeNormal(), MeleeHit, GetController(), this, MeleeDamageType);
-		}
+		UGameplayStatics::ApplyPointDamage(MeleeHit.GetActor(), MeleeAttackDamage, (MeleeHit.TraceStart - MeleeHit.TraceEnd).GetSafeNormal(), MeleeHit, GetController(), this, MeleeDamageType);
 	}
-	
-	LastMeleeAttackTime = GetWorld()->GetDeltaSeconds();
+	LastMeleeAttackTime = GetWorld()->GetTimeSeconds();
 }
 
 void AShooterProjectCharacter::MulticastPlayMeleeFX_Implementation()
@@ -779,9 +809,9 @@ void AShooterProjectCharacter::Suicide(FDamageEvent const& DamageEvent, const AA
 	OnRep_Killer();
 }
 
-void AShooterProjectCharacter::KilledByPlayer(FDamageEvent const& DamageEvent, const AShooterProjectPlayerController* EventInstigator, const AActor* DamageCauser)
+void AShooterProjectCharacter::KilledByPlayer(FDamageEvent const& DamageEvent, class AShooterProjectCharacter* Character, const AActor* DamageCauser)
 {
-	Killer = Cast<AShooterProjectCharacter>(EventInstigator->GetPawn());
+	Killer = Character;
 	OnRep_Killer();
 }
 
