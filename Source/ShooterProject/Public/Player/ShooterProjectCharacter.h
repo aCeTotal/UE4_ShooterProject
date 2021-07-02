@@ -307,9 +307,6 @@ protected:
 	float MeleeAttachDamage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Melee)
-	TSubclassOf<class UDamageType> MeleeDamageType;
-
-	UPROPERTY(EditDefaultsOnly, Category = Melee)
 	class UAnimMontage* MeleeAttackMontage;
 
 

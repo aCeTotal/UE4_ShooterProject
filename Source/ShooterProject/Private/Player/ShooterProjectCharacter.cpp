@@ -18,11 +18,12 @@
 #include "Items/GearItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstance.h"
-#include "Net/UnrealNetwork.h"
 #include "Net/RepLayout.h"
+#include "Net/UnrealNetwork.h"
 #include "Particles/Collision/ParticleModuleCollisionGPU.h"
 #include "Player/ShooterProjectPlayerController.h"
 #include "ShooterProject/ShooterProject.h"
+#include "Weapon/MeleeDamage.h"
 #include "World/Pickup.h"
 
 #define LOCTEXT_NAMESPACE "ShooterProjectCharacter"
@@ -790,7 +791,7 @@ void AShooterProjectCharacter::ServerProcessMeleeHit_Implementation(const FHitRe
 
 		if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(MeleeHit.GetActor()))
 		{
-			UGameplayStatics::ApplyPointDamage(HitPlayer, MeleeAttachDamage, (MeleeHit.TraceStart - MeleeHit.TraceEnd).GetSafeNormal(), MeleeHit, GetController(), this, MeleeDamageType);
+			UGameplayStatics::ApplyPointDamage(HitPlayer, MeleeAttachDamage, (MeleeHit.TraceStart - MeleeHit.TraceEnd).GetSafeNormal(), MeleeHit, GetController(), this, UMeleeDamage::StaticClass());
 		}
 	}
 	
