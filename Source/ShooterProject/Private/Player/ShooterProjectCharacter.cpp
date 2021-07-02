@@ -2,7 +2,9 @@
 
 #include "Player/ShooterProjectCharacter.h"
 
+#include "DrawDebugHelpers.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "ToolContextInterfaces.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -104,6 +106,7 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 
 	PlayerMeshes.Add(EEquippableSlot::EIS_Head, GetMesh());
 
+	//Hides the HeadMesh
 	GetMesh()->SetOwnerNoSee(true);
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -246,7 +249,7 @@ void AShooterProjectCharacter::BeginPlay()
 	for (auto& PlayerMesh : PlayerMeshes)
 	{
 		NakedMeshes.Add(PlayerMesh.Key, PlayerMesh.Value->SkeletalMesh);
-	}
+	}	
 }
 
 
@@ -741,13 +744,42 @@ void AShooterProjectCharacter::StopFire()
 
 void AShooterProjectCharacter::BeginMeleeAttach()
 {
-	//Generate a random number between 1 and 2.
-	int MontageSectionIndex = rand() % 3 + 1;
+	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
+	{
+		FHitResult Hit;
+		FCollisionShape Shape = FCollisionShape::MakeSphere(15.f);
+        
+		FVector StartTrace = FollowCamera->GetComponentLocation();
+		FVector EndTrace = (FollowCamera->GetComponentRotation().Vector() * MeleeAttachDistance) + StartTrace;
 
-	// Fstring animation Section
-	FString MontageSection = "start_" + FString::FromInt(MontageSectionIndex);
-	
-	PlayAnimMontage(MeleeFistAttackMontage, 1.f, FName(*MontageSection));
+		
+		FCollisionQueryParams QueryParams = FCollisionQueryParams("MeleeSweep", false, this);
+
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, true);
+ 
+		PlayAnimMontage(MeleeAttackMontage);
+ 
+		if (GetWorld()->SweepSingleByChannel(Hit, StartTrace, EndTrace, FQuat(), COLLISION_WEAPON, Shape, QueryParams))
+		{
+			if(Hit.bBlockingHit)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *Hit.GetActor()->GetName()));
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Purple, FString::Printf(TEXT("Impact Point: %s"), *Hit.ImpactPoint.ToString()));
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("Normal Point: %s"), *Hit.ImpactNormal.ToString()));
+			}
+			if (AShooterProjectCharacter* HitPlayer = Cast<AShooterProjectCharacter>(Hit.GetActor()))
+			{
+				if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(GetController()))
+				{
+					PC->OnHitPlayer();
+				}
+			}
+		}
+ 
+		ServerProcessMeleeHit(Hit);
+ 
+		LastMeleeAttackTime = GetWorld()->GetTimeSeconds();
+	}
 }
 
 void AShooterProjectCharacter::ServerProcessMeleeHit_Implementation(const FHitResult& MeleeHit)

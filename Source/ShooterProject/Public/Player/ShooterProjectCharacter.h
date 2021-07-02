@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Items/EquippableItem.h"
+#include "Components/BoxComponent.h"
 #include "ShooterProjectCharacter.generated.h"
 
 
@@ -19,12 +20,6 @@ enum class EPawnStates : uint8
 	STAND			UMETA(DisplayName = "Stand"),
 	CROUCH			UMETA(DisplayName = "Crouch"),
 	PRONE			UMETA(DisplayName = "Prone")
-};
-
-UENUM(BlueprintType)
-enum class EAttackType : uint8
-{
-	Melee_Fist		UMETA(DisplayName = "Melee - Fist")
 };
 
 USTRUCT()
@@ -65,10 +60,6 @@ class AShooterProjectCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
-
-	/** Melee fist attack montage */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* MeleeFistAttackMontage;
 
 public:
 	AShooterProjectCharacter();
