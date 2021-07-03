@@ -272,6 +272,7 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 	DOREPLIFETIME(AShooterProjectCharacter, LootSource);
 	DOREPLIFETIME(AShooterProjectCharacter, Health);
+	DOREPLIFETIME(AShooterProjectCharacter, Killer);
 	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
 }
 
@@ -616,7 +617,7 @@ bool AShooterProjectCharacter::EquipItem(class UEquippableItem* Item)
 }
 
 
-bool AShooterProjectCharacter::UnequipItem(class UEquippableItem* Item)
+bool AShooterProjectCharacter::UnEquipItem(class UEquippableItem* Item)
 {
 	if (Item)
 	{
@@ -644,7 +645,7 @@ void AShooterProjectCharacter::EquipGear(class UGearItem* Gear)
 }
 
 
-void AShooterProjectCharacter::UnequipGear(const EEquippableSlot Slot)
+void AShooterProjectCharacter::UnEquipGear(const EEquippableSlot Slot)
 {
 	if (USkeletalMeshComponent* EquippableMesh = *PlayerMeshes.Find(Slot))
 	{
@@ -667,6 +668,16 @@ void AShooterProjectCharacter::UnequipGear(const EEquippableSlot Slot)
 			EquippableMesh->SetSkeletalMesh(nullptr);
 		}
 	}
+}
+
+void AShooterProjectCharacter::EquipWeapon(UWeaponItem* WeaponItem)
+{
+	
+}
+
+void AShooterProjectCharacter::UnEquipWeapon()
+{
+	
 }
 
 
@@ -830,8 +841,6 @@ void AShooterProjectCharacter::OnRep_Killer()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SetReplicateMovement(false);
-
-	TurnOff();
 
 	//Activates Looting after player is dead
 	LootPlayerInteraction->Activate();

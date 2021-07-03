@@ -27,7 +27,7 @@ bool UGearItem::Unequip(class AShooterProjectCharacter* Character)
 
 	if (bUnEquipSuccessful && Character)
 	{
-		Character->UnequipGear(Slot);
+		Character->UnEquipGear(Slot);
 	}
 
 	return bUnEquipSuccessful;

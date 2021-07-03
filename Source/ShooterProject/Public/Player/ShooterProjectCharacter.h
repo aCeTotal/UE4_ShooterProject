@@ -230,10 +230,13 @@ public:
 public:
 
 	bool EquipItem(class UEquippableItem* Item);
-	bool UnequipItem(class UEquippableItem* Item);
+	bool UnEquipItem(class UEquippableItem* Item);
 
 	void EquipGear(class UGearItem* Gear);
-	void UnequipGear(const EEquippableSlot Slot);
+	void UnEquipGear(const EEquippableSlot Slot);
+
+	void EquipWeapon(class UWeaponItem* WeaponItem);
+	void UnEquipWeapon();
 
 
 	UPROPERTY(BlueprintAssignable, Category = "Items")

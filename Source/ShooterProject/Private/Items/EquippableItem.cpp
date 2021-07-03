@@ -50,7 +50,7 @@ bool UEquippableItem::Unequip(class AShooterProjectCharacter* Character)
 {
 	if (Character)
 	{
-		return Character->UnequipItem(this);
+		return Character->UnEquipItem(this);
 	}
 	return false;
 }
