@@ -27,13 +27,13 @@ struct FWeaponData
 {
 	GENERATED_BODY()
 
-	//Clip Size
+	//Magazine Size
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ammo)
 	int32 AmmoPerMagazine;
 
 	//The item that this weapon uses as ammo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ammo)
-	TSubclassOf<class UMagazineItem> AmmoClass;
+	TSubclassOf<class UAmmoItem> MagazineClass;
 
 	//Time between two consecutive shots
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = WeaponStat)
@@ -117,8 +117,8 @@ protected:
 	// Consume a bullet
 	void UseMagazineAmmo();
 
-	//Consume ammo from the inventory
-	void ConsumeAmmo(const int32 Amount);
+	//Consume Magazine from the inventory
+	void ConsumeMagazine(const int32 Amount);
 
 	//[server] return ammo to the inventory when the weapon is unequipped
 	void ReturnAmmoToInventory();
@@ -138,6 +138,9 @@ protected:
 	//Check if mesh is already attached
 	bool IsAttachedToPawn() const;
 
+
+
+	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Input
 
@@ -165,6 +168,10 @@ protected:
 
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	EWeaponState GetCurrentState() const;
+
+	//Kan være feil
+	UPROPERTY(BlueprintReadOnly, Category = Weapon)
+	EWeaponState CurrentState;
 
 	//Get current ammo amount (total)
 	UFUNCTION(BlueprintPure, Category = "Weapon")
@@ -237,7 +244,7 @@ protected:
 
 	//name of socket to attach weapon mesh to the character when Equipped
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
-	FName AttachPoint;
+	FName AttachSocket;
 
 	//name of socket to attach weapon mesh to the character when UnEquipped
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
@@ -246,6 +253,259 @@ protected:
 	//FX for muzzle flash
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	UParticleSystem* MuzzleFX;
+
+	//Spawned component for muzzle FX
+	UPROPERTY(Transient)
+	UParticleSystemComponent* MuzzlePSC;
+
+	//Spawned component for secondary muzzle FX
+	UPROPERTY(Transient)
+	UParticleSystemComponent* MuzzlePSCSecondary;
+
+	//Camera shake on firing
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	TSubclassOf<UMatineeCameraShake> FireCameraShake;
+	
+	//The time it takes to aim down sights, in seconds
+	UPROPERTY(EditDefaultsOnly, Category = Weapon)
+	float ADSTime;
+
+	//The amount of record to apply. We shoose a random point from 0-1 on the curve and use it to drive recoil.
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	class UCurveVector* RecoilCurve;
+
+	//The speed at witch the recoil bumbs up per second
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilSpeed;
+
+	//The speed at which the recoil resets per seconds
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilResetSpeed;
+
+	//Force feedback effect to play when the weapon is fired
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	UForceFeedbackEffect *FireForceFeedback;
+
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Animation and sound
+	
+	//Single fire sound (bLoopedFIreSound not set)
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* FireSound;
+
+	//Looped fire sound (bLoopedFireSound set)
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* FireLoopSound;
+
+	//Finished burst sound (bLoopedFireSound set)
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* FireFinishSound;
+
+	//Out of ammo sound
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* OutOfAmmoSound;
+
+	//Reload sound
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* ReloadSound;
+
+	//Reload animations
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	FWeaponAnim ReloadAnim;
+
+	//Equip sound
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	USoundCue* EquipSound;
+
+	//Equip animations
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	FWeaponAnim EquipAnim;
+
+	//Fire animations
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	FWeaponAnim FireAnim;
+
+	//Fire animations
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	FWeaponAnim FireAimingAnim;
+
+
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Flags
+
+	//Is muzzle FX looped?
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	uint32 bLoopedMuzzleFX : 1;
+
+	//Is fire sound looped?
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+	uint32 bLoopedFireSound : 1;
+
+	//Is fire animation looped?
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	uint32 bLoopedFireAnim : 1;
+
+	//Is fire animation playing?
+	uint32 bPlayingFireAnim : 1;
+
+	//Is weapon currently equipped?
+	uint32 bIsEquipped : 1;
+
+	//Is weapon fire active?
+	uint32 bWantsToFire : 1;
+
+	//Is reload animation playing?
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Reload)
+	uint32 bPendingReload : 1;
+
+	//is equip animation playing?
+	uint32 bPendingEquip : 1;
+
+	//Weapon is refiring
+	uint32 bRefiring;
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+	
+	//time of loast successful weapon fire
+	float LastFireTime;
+
+	//Last time when this weapon was switched to
+	float EquipStartedTime;
+
+	//How much time weapon needs to be equipped
+	float EquipDuration;
+
+	//current ammo - inside magazine
+	UPROPERTY(Transient, Replicated)
+	int32 CurrentAmmoInMagazine;
+
+	//burst counter, used for replicating fire events to remote clients
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_BurstCounter)
+	int32 BurstCounter;
+
+
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// TimerHandles
+
+	//Handle for efficient management of OnEquipFinished timer
+	FTimerHandle TimerHandle_OnEquipFinished;
+
+	//Handle for efficient management of StopReload timer
+	FTimerHandle TimerHandle_StopReload;
+
+	//Handle for efficient management of ReloadWeapon timer
+	FTimerHandle TimerHandle_ReloadWeapon;
+
+	//Handle for efficient management of HandleFiring timer
+	FTimerHandle TimerHandle_HandleFiring;
+
+
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Input - Server side
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerStartFire();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerStopFire();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerStartReload();
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerStopReload();
+
+
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Replication & Effects
+
+	UFUNCTION()
+	void OnRep_PawnOwner();
+
+	UFUNCTION()
+	void OnRep_BurstCounter();
+
+	UFUNCTION()
+	void OnRep_Reload();
+
+	//Called in network play to do the cosmetic FX for firing
+	virtual void SimulateWeaponFire();
+
+	//Called in network play to stop cosmetic FX (e.g. for a looping shot)
+	virtual void StopSimulatingWeaponFire();
+
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Weapon usage
+
+	//Handle hit locally before asking server to process hit
+	void HandleHit(const FHitResult& Hit, class AShooterProjectCharacter* HitPlayer = nullptr);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerHandleHit(const FHitResult& Hit, class AShooterProjectCharacter* HitPlayer = nullptr);
+
+	//[local] weapon specific fire implementation
+	virtual void FireShot();
+
+	//[server] fire & update ammo
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerHandleFiring();
+
+	//[local + server] handle weapon refire, compensating for slack time of the timer can't sample fast enough
+	void HandleReFiring();
+	
+	//[local + server] Handle weapon fire
+	void HandleFiring();
+
+	//[local + server] firing started
+	virtual void OnBurstStarted();
+
+	//[local + server] firing finished
+	virtual void OnBurstFinished();
+
+	//Update weapon state
+	void SetWeaponState(EWeaponState NewState);
+
+	//Determine current weapon state
+	void DetermineWeaponState();
+
+	//Attaches weapon mesh to pawn's mesh
+	void AttachMeshToPawn();
+
+	//detaches weapon mesh from pawn
+	void DetachMeshFromPawn();
 	
 
+	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Weapon usage helpers
+
+	//Play weapon sounds
+	UAudioComponent* PlayWeaponSound(USoundCue* Sound);
+
+	//Play Weapon animations
+	float PlayWeaponAnimation(const FWeaponAnim& Animation);
+
+	//Stop playing weapon animation
+	void StopWeaponAnimation(const FWeaponAnim& Animation);
+
+	//Get the aim of the camera
+	FVector GetCameraAim() const;
+
+	//Find hit
+	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const;
 };

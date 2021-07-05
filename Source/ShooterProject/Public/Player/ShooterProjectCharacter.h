@@ -288,6 +288,12 @@ public:
 
 protected:
 
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_EquippedWeapon)
+	class AWeapon* EquippedWeapon;
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
 	void StartFire();
 	void StopFire();
 

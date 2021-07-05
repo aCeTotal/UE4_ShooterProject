@@ -3,3 +3,7 @@
 
 #include "Items/MagazineItem.h"
 
+UMagazineItem::UMagazineItem()
+{
+	
+}

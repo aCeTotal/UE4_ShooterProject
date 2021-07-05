@@ -16,6 +16,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Items/EquippableItem.h"
 #include "Items/GearItem.h"
+#include "Items/WeaponItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstance.h"
 #include "Net/RepLayout.h"
@@ -24,6 +25,7 @@
 #include "Player/ShooterProjectPlayerController.h"
 #include "ShooterProject/ShooterProject.h"
 #include "Weapon/MeleeDamage.h"
+#include "Weapon/Weapon.h"
 #include "World/Pickup.h"
 
 #define LOCTEXT_NAMESPACE "ShooterProjectCharacter"
@@ -273,6 +275,7 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(AShooterProjectCharacter, LootSource);
 	DOREPLIFETIME(AShooterProjectCharacter, Health);
 	DOREPLIFETIME(AShooterProjectCharacter, Killer);
+	DOREPLIFETIME(AShooterProjectCharacter, EquippedWeapon);
 	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
 }
 
@@ -670,14 +673,44 @@ void AShooterProjectCharacter::UnEquipGear(const EEquippableSlot Slot)
 	}
 }
 
+
 void AShooterProjectCharacter::EquipWeapon(UWeaponItem* WeaponItem)
 {
-	
+	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
+	{
+		if (EquippedWeapon)
+		{
+			UnEquipWeapon();
+		}
+
+		//Spawn the weapon in
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.bNoFail = true;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		SpawnParams.Owner = SpawnParams.Instigator = this;
+
+		if (AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponItem->WeaponClass, SpawnParams))
+		{
+			Weapon->Item = WeaponItem;
+
+			EquippedWeapon = Weapon;
+			OnRep_EquippedWeapon();
+
+			Weapon->OnEquip();
+		}
+	}
 }
+
 
 void AShooterProjectCharacter::UnEquipWeapon()
 {
-	
+	if (HasAuthority() && EquippedWeapon)
+	{
+		EquippedWeapon->OnUnEquip();
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+		OnRep_EquippedWeapon();
+	}
 }
 
 
@@ -744,14 +777,32 @@ void AShooterProjectCharacter::OnRep_Health(float OldHealth)
 	OnHealthModified(Health - OldHealth);
 }
 
+void AShooterProjectCharacter::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->OnEquip();
+	}
+}
+
 void AShooterProjectCharacter::StartFire()
 {
-	BeginMeleeAttach();
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->StartFire();
+	}
+	else
+	{
+		BeginMeleeAttach();
+	}
 }
 
 void AShooterProjectCharacter::StopFire()
 {
-	
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->StopFire();
+	}
 }
 
 void AShooterProjectCharacter::BeginMeleeAttach()
