@@ -37,6 +37,7 @@ AWeapon::AWeapon()
 	bPendingEquip = false;
 	CurrentState = EWeaponState::Idle;
 	AttachSocket = FName("GripPoint");
+	MuzzleAttachPoint = FName("Muzzle");
 
 	CurrentAmmoInMagazine = 0;
 	BurstCounter = 0;
@@ -220,7 +221,7 @@ bool AWeapon::IsAttachedToPawn() const
 
 void AWeapon::StartFire()
 {
-	if (GetLocalRole())
+	if (!HasAuthority())
 	{
 		ServerStartFire();
 	}
@@ -235,7 +236,7 @@ void AWeapon::StartFire()
 
 void AWeapon::StopFire()
 {
-	if (GetLocalRole() && PawnOwner && PawnOwner->IsLocallyControlled())
+	if (!HasAuthority() && PawnOwner && PawnOwner->IsLocallyControlled())
 	{
 		ServerStopFire();
 	}
@@ -250,7 +251,7 @@ void AWeapon::StopFire()
 
 void AWeapon::StartReload(bool bFromReplication)
 {
-	if (!bFromReplication && GetLocalRole())
+	if (!bFromReplication && !HasAuthority())
 	{
 		ServerStartReload();
 	}
