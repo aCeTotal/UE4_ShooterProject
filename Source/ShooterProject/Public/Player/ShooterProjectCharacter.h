@@ -37,15 +37,15 @@ struct FInteractionData
 
 	//The current interactable component we're viewing, if there is one
 	UPROPERTY()
-		class UInteractionComponent* ViewedInteractionComponent;
+	class UInteractionComponent* ViewedInteractionComponent;
 
 	//The time when we last checked for an interactable
 	UPROPERTY()
-		float LastInteractionCheckTime;
+	float LastInteractionCheckTime;
 
 	//Wether the local player is holding the interact key
 	UPROPERTY()
-		bool bInteractHeld;
+	bool bInteractHeld;
 };
 
 UCLASS(config=Game)

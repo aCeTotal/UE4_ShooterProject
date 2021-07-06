@@ -641,18 +641,19 @@ void AWeapon::FireShot()
 				//PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
 			}
 
-			FVector CamLoc;
-			FRotator CamRot;
-			PC->GetPlayerViewPoint(CamLoc, CamRot);
-
+			FVector SocketLoc;
+			FRotator SocketRot;
+			SocketLoc = GetWeaponMesh()->GetSocketLocation("MuzzleAttachPoint");
+			SocketRot = GetWeaponMesh()->GetSocketRotation("MuzzleAttachPoint");
+			
 			FHitResult Hit;
 			FCollisionQueryParams QueryParams;
 			QueryParams.AddIgnoredActor(this);
 			QueryParams.AddIgnoredActor(PawnOwner);
 
-			FVector FireDir = CamRot.Vector();// PawnOwner->IsAiming() ? CamRot.Vector() : FMath::VRandCone(CamRot.Vector(), FMath::DegreesToRadians(PawnOwner->IsAiming() ? 0.f : 5.f));
-			FVector TraceStart = CamLoc;
-			FVector TraceEnd = (FireDir * HitScanConfig.Distance) + CamLoc;
+			FVector FireDir = SocketRot.Vector();// PawnOwner->IsAiming() ? CamRot.Vector() : FMath::VRandCone(CamRot.Vector(), FMath::DegreesToRadians(PawnOwner->IsAiming() ? 0.f : 5.f));
+			FVector TraceStart = SocketLoc;
+			FVector TraceEnd = (FireDir * HitScanConfig.Distance) + SocketLoc;
 
 			if (GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, COLLISION_WEAPON, QueryParams))
 			{
