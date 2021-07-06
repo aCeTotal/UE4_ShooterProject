@@ -248,6 +248,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE TMap<EEquippableSlot, UEquippableItem*> GetEquippedItems() const { return EquippedItems; };
 
+	UFUNCTION(BlueprintCallable, Category = "Weapons")
+	FORCEINLINE class AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
+
 
 protected:
 

@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class SHOOTERPROJECT_API UWeaponItem : public UEquippableItem
 {
 	GENERATED_BODY()
