@@ -22,6 +22,17 @@ enum class EPawnStates : uint8
 	PRONE			UMETA(DisplayName = "Prone")
 };
 
+/**Upper-body states while using a weapon. Cached in AnimInstance as bools.
+ * This will set the correct upperbody basestate and select the correct AimOffset.
+ */
+UENUM(BlueprintType)
+enum class EWeaponOffsetStates : uint8
+{
+	Resting			UMETA(DisplayName = "Weapon_Resting"),
+	Ready			UMETA(DisplayName = "Weapon_Ready"),
+	Aiming			UMETA(DisplayName = "Weapon_Aiming")
+};
+
 USTRUCT()
 struct FInteractionData
 {
@@ -147,8 +158,12 @@ public:
 	float BaseLookUpRate;
 
 	//The current stance of the player character
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation)
-	EPawnStates CurrentState = EPawnStates::STAND;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
+	EPawnStates CurrentState;
+
+	//The current state of the upper-body while holding a weapon.
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
+	EWeaponOffsetStates CurrentOffsetState;
 
 	// Indicates whether the Player Character is running or not.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

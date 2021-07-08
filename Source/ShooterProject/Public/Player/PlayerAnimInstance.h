@@ -44,6 +44,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool bIsProning;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bIsResting;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bIsAiming;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bIsReady;
+
 private:
 
 	float CalculateDirection(const FVector& PlayerVelocity, const FRotator& PlayerRotation) const;

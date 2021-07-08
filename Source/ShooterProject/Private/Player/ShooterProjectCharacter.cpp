@@ -35,6 +35,10 @@
 
 AShooterProjectCharacter::AShooterProjectCharacter()
 {
+	CurrentState = EPawnStates::STAND;
+	CurrentOffsetState = EWeaponOffsetStates::Ready;
+
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -276,6 +280,8 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(AShooterProjectCharacter, Health);
 	DOREPLIFETIME(AShooterProjectCharacter, Killer);
 	DOREPLIFETIME(AShooterProjectCharacter, EquippedWeapon);
+	DOREPLIFETIME(AShooterProjectCharacter, CurrentState);
+	DOREPLIFETIME(AShooterProjectCharacter, CurrentOffsetState);
 	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
 }
 
