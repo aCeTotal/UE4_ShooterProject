@@ -48,9 +48,9 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			Direction = CalculateDirection(Velocity, ActorRotation);
 
 			// Animation Stance States
-			bIsStanding = PlayerCharacter->CurrentState == EPawnStates::STAND;
-			bIsCrouching = PlayerCharacter->CurrentState == EPawnStates::CROUCH;
-			bIsProning = PlayerCharacter->CurrentState == EPawnStates::PRONE;
+			bIsStanding = PlayerCharacter->CurrentPawnStance == EPawnStance::Stand;
+			bIsCrouching = PlayerCharacter->CurrentPawnStance == EPawnStance::Crouch;
+			bIsProning = PlayerCharacter->CurrentPawnStance == EPawnStance::Prone;
 			
 			// Animation AimOffset States
 			bIsResting = PlayerCharacter->CurrentOffsetState == EWeaponOffsetStates::Resting;

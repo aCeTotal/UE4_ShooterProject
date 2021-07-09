@@ -35,7 +35,7 @@
 
 AShooterProjectCharacter::AShooterProjectCharacter()
 {
-	CurrentState = EPawnStates::STAND;
+	CurrentPawnStance = EPawnStance::STAND;
 	CurrentOffsetState = EWeaponOffsetStates::Ready;
 
 	
@@ -228,6 +228,18 @@ void AShooterProjectCharacter::LootItem(UItem* ItemToGive)
 	
 }
 
+void AShooterProjectCharacter::OnRep_PawnStance(EPawnStance NewStance)
+{
+	if (CurrentPawnStance == EPawnStance::Stand)
+	{
+		CurrentPawnStance = EPawnStance::Crouch;
+	}
+	else if (CurrentPawnStance == EPawnStance::Crouch)
+	{
+		CurrentPawnStance = EPawnStance::Prone;
+	}
+}
+
 void AShooterProjectCharacter::ServerLootItem_Implementation(UItem* ItemToLoot)
 {
 	LootItem(ItemToLoot);
@@ -280,7 +292,7 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(AShooterProjectCharacter, Health);
 	DOREPLIFETIME(AShooterProjectCharacter, Killer);
 	DOREPLIFETIME(AShooterProjectCharacter, EquippedWeapon);
-	DOREPLIFETIME(AShooterProjectCharacter, CurrentState);
+	DOREPLIFETIME(AShooterProjectCharacter, CurrentPawnStance);
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentOffsetState);
 	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
 }
@@ -746,27 +758,31 @@ void AShooterProjectCharacter::PrevInventoryItem()
 
 void AShooterProjectCharacter::StartCrouching()
 {
-	CurrentState = EPawnStates::CROUCH;
+	CurrentPawnStance = EPawnStance::CROUCH;
 	Crouch();
+	OnRep_PawnStance();
 }
 
 
 void AShooterProjectCharacter::StopCrouching()
 {
-	CurrentState = EPawnStates::STAND;
+	CurrentPawnStance = EPawnStance::STAND;
 	UnCrouch();
+	OnRep_PawnStance();
 }
 
 
 void AShooterProjectCharacter::StartProning()
 {
-	CurrentState = EPawnStates::PRONE;
+	CurrentPawnStance = EPawnStance::PRONE;
+	OnRep_PawnStance();
 }
 
 
 void AShooterProjectCharacter::StopProning()
 {
-	CurrentState = EPawnStates::STAND;
+	CurrentPawnStance = EPawnStance::STAND;
+	OnRep_PawnStance();
 }
 
 float AShooterProjectCharacter::ModifyHealth(const float Delta)
@@ -927,28 +943,36 @@ void AShooterProjectCharacter::OnRep_Killer()
 // Next AnimBP State
 void AShooterProjectCharacter::NextPawnState()
 {
-	if (CurrentState == EPawnStates::STAND)
+	EPawnStance NewStance = CurrentPawnStance;
+	
+	if (CurrentPawnStance == EPawnStance::Stand)
 	{
-		CurrentState = EPawnStates::CROUCH;
-	}
-	else if (CurrentState == EPawnStates::CROUCH)
+		NewStance = EPawnStance::Crouch;
+	}	
+	else if (CurrentPawnStance == EPawnStance::Crouch)
 	{
-		CurrentState = EPawnStates::PRONE;
+		NewStance = EPawnStance::Prone;
 	}
+	
+	OnRep_PawnStance(NewStance);
 }
 
 
 // Prev AnimBP State
 void AShooterProjectCharacter::PrevPawnState()
 {
-	if (CurrentState == EPawnStates::PRONE)
+	EPawnStance NewStance = CurrentPawnStance;
+	
+	if (CurrentPawnStance == EPawnStance::Prone)
 	{
-		CurrentState = EPawnStates::CROUCH;
+		NewStance = EPawnStance::Crouch;
 	}
-	else if (CurrentState == EPawnStates::CROUCH)
+	else if (CurrentPawnStance == EPawnStance::Crouch)
 	{
-		CurrentState = EPawnStates::STAND;
+		NewStance = EPawnStance::Stand;
 	}
+	
+	OnRep_PawnStance(NewStance);
 }
 
 

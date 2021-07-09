@@ -15,11 +15,11 @@ class AWeaponClass;
 
 //AnimBP States.
 UENUM(BlueprintType)
-enum class EPawnStates : uint8
+enum class EPawnStance : uint8
 {
-	STAND			UMETA(DisplayName = "Stand"),
-	CROUCH			UMETA(DisplayName = "Crouch"),
-	PRONE			UMETA(DisplayName = "Prone")
+	Stand			UMETA(DisplayName = "Stand"),
+	Crouch			UMETA(DisplayName = "Crouch"),
+	Prone			UMETA(DisplayName = "Prone")
 };
 
 /**Upper-body states while using a weapon. Cached in AnimInstance as bools.
@@ -158,8 +158,11 @@ public:
 	float BaseLookUpRate;
 
 	//The current stance of the player character
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
-	EPawnStates CurrentState;
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_PawnStance)
+	EPawnStance CurrentPawnStance;
+
+	UFUNCTION()
+	void OnRep_PawnStance(EPawnStance NewStance);
 
 	//The current state of the upper-body while holding a weapon.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
