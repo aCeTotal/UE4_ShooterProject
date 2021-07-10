@@ -39,6 +39,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		AShooterProjectCharacter* PlayerCharacter = Cast<AShooterProjectCharacter>(Owner);
 		if (PlayerCharacter)
 		{
+			
 			bWeaponEquipped = PlayerCharacter->IsHoldingWeapon();
 			bIsInAir = PlayerCharacter->GetMovementComponent()->IsFalling();
 			bIsLocallyControlled = PlayerCharacter->IsLocallyControlled();

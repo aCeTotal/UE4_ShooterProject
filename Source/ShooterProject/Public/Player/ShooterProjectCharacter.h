@@ -23,7 +23,7 @@ enum class EPawnState : uint8
 };
 
 /**Upper-body states while using a weapon. Cached in AnimInstance as bools.
- * This will set the correct upperbody basestate and select the correct AimOffset.
+ * This will set the correct upper-body base state and select the correct AimOffset.
  */
 UENUM(BlueprintType)
 enum class EWeaponOffsetState : uint8
@@ -113,7 +113,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Looting")
 	bool IsLooting() const;
 
-	UFUNCTION(BlueprintPure, Category = "Animation")
+	UFUNCTION()
 	bool IsHoldingWeapon() const;
 
 
