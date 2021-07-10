@@ -20,6 +20,9 @@ public:
 	bool bIsInAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bBlockAimoffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool bIsLocallyControlled;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")

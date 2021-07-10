@@ -17,9 +17,10 @@ class AWeaponClass;
 UENUM(BlueprintType)
 enum class EPawnState : uint8
 {
-	Stand			UMETA(DisplayName = "Stand"),
-	Crouch			UMETA(DisplayName = "Crouch"),
-	Prone			UMETA(DisplayName = "Prone")
+	None			UMETA(DisplayName = "None"),
+	Stand			UMETA(DisplayName = "Stance_Stand"),
+	Crouch			UMETA(DisplayName = "Stance_Crouch"),
+	Prone			UMETA(DisplayName = "Stance_Prone")
 };
 
 /**Upper-body states while using a weapon. Cached in AnimInstance as bools.
@@ -105,8 +106,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class USkeletalMeshComponent* BackpackMesh;
 
-public:
-
 	UFUNCTION(BlueprintCallable)
 	void SetLootSource(class UInventoryComponent* NewLootSource);
 
@@ -115,6 +114,9 @@ public:
 
 	UFUNCTION()
 	bool IsHoldingWeapon() const;
+
+	UFUNCTION()
+	void ResetProneFix();
 
 
 protected:
@@ -164,12 +166,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
 	EPawnState CurrentPawnState;
 
+	//The current stance of the player character
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
+	EPawnState ProneFix;
+
 	//The current state of the upper-body while holding a weapon.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
 	EWeaponOffsetState CurrentOffsetState;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUpdatePawnState(EPawnState NewState);
+	void ServerUpdatePawnState(EPawnState NewState, EPawnState ProneCheckValue);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerUpdateOffsetState(EWeaponOffsetState NewState);
@@ -187,6 +193,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float Sprintingspeed;
+
+	//Time before resetting the ProneFix-value (Animation)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	float ProneToStandDelay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	float ProneToCrouchDelay;
 
 protected:
 
@@ -222,6 +235,10 @@ protected:
 	FORCEINLINE class UInteractionComponent* GetInteractable() const { return InteractionData.ViewedInteractionComponent; }
 
 	FTimerHandle TimerHandle_Interact;
+
+	/* Handles to manage Pronefix bool, so that aimoffsets are deactivated when standing up from prone state */
+	FTimerHandle ProneToCrouchTimerHandle;
+	FTimerHandle ProneToStandTimerHandle;
 
 public:
 	

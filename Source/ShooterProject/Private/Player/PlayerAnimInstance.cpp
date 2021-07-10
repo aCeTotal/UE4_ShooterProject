@@ -10,6 +10,7 @@
 UPlayerAnimInstance::UPlayerAnimInstance()
 {
 	bIsInAir = false;
+	bBlockAimoffset = false;
 	Speed = 0.f;
 	Direction = 0.f;
 }
@@ -39,7 +40,6 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		AShooterProjectCharacter* PlayerCharacter = Cast<AShooterProjectCharacter>(Owner);
 		if (PlayerCharacter)
 		{
-			
 			bWeaponEquipped = PlayerCharacter->IsHoldingWeapon();
 			bIsInAir = PlayerCharacter->GetMovementComponent()->IsFalling();
 			bIsLocallyControlled = PlayerCharacter->IsLocallyControlled();
@@ -47,6 +47,9 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			Velocity = PlayerCharacter->GetVelocity();
 			ActorRotation = PlayerCharacter->GetActorRotation();
 			Direction = CalculateDirection(Velocity, ActorRotation);
+
+			//Prone fix
+			bBlockAimoffset = PlayerCharacter->ProneFix == EPawnState::Prone;
 
 			// Stance States.
 			bIsStanding = PlayerCharacter->CurrentPawnState == EPawnState::Stand;

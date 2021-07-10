@@ -45,6 +45,10 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+
+	//TimerHandle for Pronefix Bool reset
+	ProneToStandDelay = 2.f;
+	ProneToCrouchDelay = 2.f;
 	
 	//Set Health
 	MaxHealth = 100.f;
@@ -158,6 +162,17 @@ bool AShooterProjectCharacter::IsHoldingWeapon() const
 	return EquippedWeapon != nullptr;
 }
 
+void AShooterProjectCharacter::ResetProneFix()
+{
+	GetWorld()->GetTimerManager().ClearTimer(ProneToCrouchTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(ProneToStandTimerHandle);
+
+	ProneFix = EPawnState::None;
+
+	ServerUpdatePawnState(CurrentPawnState, ProneFix);
+}
+
+
 void AShooterProjectCharacter::BeginLootingPlayer(AShooterProjectCharacter* Character)
 {
 	if (Character)
@@ -232,12 +247,13 @@ void AShooterProjectCharacter::LootItem(UItem* ItemToGive)
 	
 }
 
-void AShooterProjectCharacter::ServerUpdatePawnState_Implementation(EPawnState NewState)
+void AShooterProjectCharacter::ServerUpdatePawnState_Implementation(EPawnState NewState, EPawnState ProneCheckValue)
 {
 	CurrentPawnState = NewState;
+	ProneFix = ProneCheckValue;
 }
 
-bool AShooterProjectCharacter::ServerUpdatePawnState_Validate(EPawnState NewState)
+bool AShooterProjectCharacter::ServerUpdatePawnState_Validate(EPawnState NewState, EPawnState ProneCheckValue)
 {
 	return true;
 }
@@ -306,6 +322,7 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(AShooterProjectCharacter, EquippedWeapon);
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentPawnState);
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentOffsetState);
+	DOREPLIFETIME(AShooterProjectCharacter, ProneFix);
 	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
 }
 
@@ -763,30 +780,40 @@ class USkeletalMeshComponent* AShooterProjectCharacter::GetSlotSkeletalMeshCompo
 void AShooterProjectCharacter::StartCrouching()
 {
 	CurrentPawnState = EPawnState::Crouch;
-	Crouch();
-	ServerUpdatePawnState(CurrentPawnState);
+	ProneFix = EPawnState::Crouch;
+    Crouch();
+    ServerUpdatePawnState(CurrentPawnState, ProneFix);
 }
 
 
 void AShooterProjectCharacter::StopCrouching()
 {
 	CurrentPawnState = EPawnState::Stand;
+	ProneFix = EPawnState::Stand;
 	UnCrouch();
-	ServerUpdatePawnState(CurrentPawnState);
+	ServerUpdatePawnState(CurrentPawnState, ProneFix);
 }
 
 
 void AShooterProjectCharacter::StartProning()
 {
 	CurrentPawnState = EPawnState::Prone;
-	ServerUpdatePawnState(CurrentPawnState);
+	ProneFix = EPawnState::Prone;
+	ServerUpdatePawnState(CurrentPawnState, ProneFix);
 }
 
 
 void AShooterProjectCharacter::StopProning()
 {
-	CurrentPawnState = EPawnState::Stand;
-	ServerUpdatePawnState(CurrentPawnState);
+	if (CurrentPawnState == EPawnState::Prone)
+	{
+		CurrentPawnState = EPawnState::Stand;
+        ProneFix = EPawnState::Prone;
+        ServerUpdatePawnState(CurrentPawnState, ProneFix);
+
+		GetWorld()->GetTimerManager().SetTimer(ProneToStandTimerHandle, this, &AShooterProjectCharacter::ResetProneFix, ProneToStandDelay, false);
+	}
+
 }
 
 float AShooterProjectCharacter::ModifyHealth(const float Delta)
@@ -947,38 +974,38 @@ void AShooterProjectCharacter::OnRep_Killer()
 // Next AnimBP State
 void AShooterProjectCharacter::NextPawnState()
 {
-	EPawnState NewState = CurrentPawnState;
 	
 	if (CurrentPawnState == EPawnState::Stand)
 	{
-		NewState = EPawnState::Crouch;
+		CurrentPawnState = EPawnState::Crouch;
+		ProneFix = EPawnState::Crouch;
 	}	
 	else if (CurrentPawnState == EPawnState::Crouch)
 	{
-		NewState = EPawnState::Prone;
+		CurrentPawnState = EPawnState::Prone;
 	}
 	
-	CurrentPawnState = NewState;	
-	ServerUpdatePawnState(NewState);
+	ServerUpdatePawnState(CurrentPawnState, ProneFix);
 }
 
 
 // Prev AnimBP State
 void AShooterProjectCharacter::PrevPawnState()
 {
-	EPawnState NewState = CurrentPawnState;
 	
 	if (CurrentPawnState == EPawnState::Prone)
-	{
-		NewState = EPawnState::Crouch;
+	{	
+		CurrentPawnState = EPawnState::Crouch;
+		ProneFix = EPawnState::Prone;
+		GetWorld()->GetTimerManager().SetTimer(ProneToStandTimerHandle, this, &AShooterProjectCharacter::ResetProneFix, ProneToCrouchDelay, false);
 	}
 	else if (CurrentPawnState == EPawnState::Crouch)
 	{
-		NewState = EPawnState::Stand;
+		CurrentPawnState = EPawnState::Stand;
+		ProneFix = EPawnState::Stand;
 	}
-	
-	CurrentPawnState = NewState;
-	ServerUpdatePawnState(NewState);
+
+	ServerUpdatePawnState(CurrentPawnState, ProneFix);
 }
 
 
