@@ -15,7 +15,7 @@ class AWeaponClass;
 
 //AnimBP States.
 UENUM(BlueprintType)
-enum class EPawnStance : uint8
+enum class EPawnState : uint8
 {
 	Stand			UMETA(DisplayName = "Stand"),
 	Crouch			UMETA(DisplayName = "Crouch"),
@@ -26,7 +26,7 @@ enum class EPawnStance : uint8
  * This will set the correct upperbody basestate and select the correct AimOffset.
  */
 UENUM(BlueprintType)
-enum class EWeaponOffsetStates : uint8
+enum class EWeaponOffsetState : uint8
 {
 	Resting			UMETA(DisplayName = "Weapon_Resting"),
 	Ready			UMETA(DisplayName = "Weapon_Ready"),
@@ -113,6 +113,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Looting")
 	bool IsLooting() const;
 
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	bool IsHoldingWeapon() const;
+
 
 protected:
 
@@ -158,15 +161,18 @@ public:
 	float BaseLookUpRate;
 
 	//The current stance of the player character
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_PawnStance)
-	EPawnStance CurrentPawnStance;
-
-	UFUNCTION()
-	void OnRep_PawnStance(EPawnStance NewStance);
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
+	EPawnState CurrentPawnState;
 
 	//The current state of the upper-body while holding a weapon.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Animation, Replicated)
-	EWeaponOffsetStates CurrentOffsetState;
+	EWeaponOffsetState CurrentOffsetState;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerUpdatePawnState(EPawnState NewState);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerUpdateOffsetState(EWeaponOffsetState NewState);
 
 	// Indicates whether the Player Character is running or not.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -275,12 +281,6 @@ protected:
 	//Allows for efficient access of equipped item
 	UPROPERTY(VisibleAnywhere, Category = "Items")
 	TMap<EEquippableSlot, UEquippableItem*> EquippedItems;
-
-	//Function used for scrolling up in the inventory GUI
-	void NextInventoryItem();
-
-	//Function used for scrolling down in the inventory GUI
-	void PrevInventoryItem();
 
 	void StartCrouching();
 	void StopCrouching();

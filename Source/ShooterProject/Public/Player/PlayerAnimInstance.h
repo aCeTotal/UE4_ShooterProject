@@ -36,6 +36,9 @@ public:
 
 	// Animation State Checks
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bWeaponEquipped;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool bIsStanding;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")

@@ -39,7 +39,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		AShooterProjectCharacter* PlayerCharacter = Cast<AShooterProjectCharacter>(Owner);
 		if (PlayerCharacter)
 		{
-			
+			bWeaponEquipped = PlayerCharacter->IsHoldingWeapon();
 			bIsInAir = PlayerCharacter->GetMovementComponent()->IsFalling();
 			bIsLocallyControlled = PlayerCharacter->IsLocallyControlled();
 			Speed = PlayerCharacter->GetVelocity().Size();
@@ -47,15 +47,15 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			ActorRotation = PlayerCharacter->GetActorRotation();
 			Direction = CalculateDirection(Velocity, ActorRotation);
 
-			// Animation Stance States
-			bIsStanding = PlayerCharacter->CurrentPawnStance == EPawnStance::Stand;
-			bIsCrouching = PlayerCharacter->CurrentPawnStance == EPawnStance::Crouch;
-			bIsProning = PlayerCharacter->CurrentPawnStance == EPawnStance::Prone;
+			// Stance States.
+			bIsStanding = PlayerCharacter->CurrentPawnState == EPawnState::Stand;
+			bIsCrouching = PlayerCharacter->CurrentPawnState == EPawnState::Crouch;
+			bIsProning = PlayerCharacter->CurrentPawnState == EPawnState::Prone;
 			
-			// Animation AimOffset States
-			bIsResting = PlayerCharacter->CurrentOffsetState == EWeaponOffsetStates::Resting;
-			bIsReady = PlayerCharacter->CurrentOffsetState == EWeaponOffsetStates::Ready;
-			bIsAiming = PlayerCharacter->CurrentOffsetState == EWeaponOffsetStates::Aiming;
+			// Weapon AimOffset States. Changing the upper-body basepose and selecting the correct aimoffset.
+			bIsResting = PlayerCharacter->CurrentOffsetState == EWeaponOffsetState::Resting;
+			bIsReady = PlayerCharacter->CurrentOffsetState == EWeaponOffsetState::Ready;
+			bIsAiming = PlayerCharacter->CurrentOffsetState == EWeaponOffsetState::Aiming;
 		}
 	}
 }
