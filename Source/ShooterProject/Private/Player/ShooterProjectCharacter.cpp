@@ -811,6 +811,7 @@ void AShooterProjectCharacter::StopProning()
         ProneFix = EPawnState::Prone;
         ServerUpdatePawnState(CurrentPawnState, ProneFix);
 
+		//Resets the ProneFix value when Prone->Stand animation is finished and enables aimoffset.
 		GetWorld()->GetTimerManager().SetTimer(ProneToStandTimerHandle, this, &AShooterProjectCharacter::ResetProneFix, ProneToStandDelay, false);
 	}
 

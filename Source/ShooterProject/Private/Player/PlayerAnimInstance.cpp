@@ -48,7 +48,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			ActorRotation = PlayerCharacter->GetActorRotation();
 			Direction = CalculateDirection(Velocity, ActorRotation);
 
-			//Prone fix
+			//Prone fix - When pawn are leaving prone state, all aimoffsets are disabled.
 			bBlockAimoffset = PlayerCharacter->ProneFix == EPawnState::Prone;
 
 			// Stance States.
