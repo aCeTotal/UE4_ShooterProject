@@ -128,14 +128,14 @@ void AWeapon::ConsumeMagazine(const int32 Amount)
 
 void AWeapon::ReturnAmmoToInventory()
 {
-	//When the weapon is unequipped, try return the players ammo to their inventory
+	//When the weapon is unequipped or Reloaded before empty, try return the players ammo to their inventory
 	if (HasAuthority())
 	{
 		if (PawnOwner && CurrentAmmoInMagazine > 0)
 		{
 			if (UInventoryComponent* Inventory = PawnOwner->PlayerInventory)
 			{
-				Inventory->TryAddItemFromClass(WeaponConfig.MagazineClass, CurrentAmmoInMagazine);
+				Inventory->TryAddMagazineFromClass(WeaponConfig.MagazineClass, 1, CurrentAmmoInMagazine);
 			}
 		}
 	}

@@ -101,6 +101,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FItemAddResult TryAddItemFromClass(TSubclassOf<class UItem> ItemClass, const int32 Quanity);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FItemAddResult TryAddMagazineFromClass(TSubclassOf<class UItem> ItemClass, const int32 Quanity, const int32 Ammo);
+
 	/** Take some quantity away from the item, and remove it from the inventory when quantity reaches zero
 	Useful for things like eating food, using ammo, ect*/
 	int32 ConsumeItem(class UItem* Item);
@@ -172,6 +175,9 @@ private:
 	// Don't call Items.Add() directly, use this function instead, as it handles replicated and ownership
 	UItem* AddItem(class UItem* Item);
 
+	// Don't call Items.Add() directly, use this function instead, as it handles replicated and ownership
+	UItem* AddMagazine(class UItem* Item);
+
 	UFUNCTION()
 	void OnRep_Items();
 
@@ -180,5 +186,8 @@ private:
 
 	// Internal, non-BP exposed add item function. Don't call this directly, use TryAddItem(), or TryAddItemFromClass() instead.
 	FItemAddResult TryAddItem_Internal(class UItem* Item);
+
+	// Internal, non-BP exposed add item function. Don't call this directly, use TryAddItem(), or TryAddItemFromClass() instead.
+	FItemAddResult TryAddMagazine_Internal(class UItem* Item);
 		
 };
