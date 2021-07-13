@@ -51,8 +51,16 @@ public:
 	float Weight;
 
 	/** Whether or not this item can be stacked */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item" )
 	bool bStackable;
+
+	/** Whether or not this item can be stacked */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
+	bool bIsAMagazine;
+
+	/** The amount of the item */
+	UPROPERTY(ReplicatedUsing = OnRep_Ammo, EditAnywhere, Category = "Item", meta = (UIMin = 0, EditCondition = bIsAMagazine))
+	int32 Ammo;
 
 	/** The Maximum size that a stack of items can be */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item", meta = (ClampMin = 2, EditCondition = bStackable))
@@ -80,11 +88,20 @@ public:
 	UFUNCTION()
 	void OnRep_Quantity();
 
+	UFUNCTION()
+	void OnRep_Ammo();
+
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	void SetQuantity(const int32 NewQuantity);
 
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	void SetAmmoAmount(const int32 NewAmmoAmount);
+
 	UFUNCTION(BlueprintPure, Category = "Item")
 	FORCEINLINE int32 GetQuantity() const { return Quantity; };
+
+	UFUNCTION(BlueprintPure, Category = "Item")
+	FORCEINLINE int32 GetAmmo() const { return Ammo; };
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	FORCEINLINE float GetStackWeight() const { return Quantity * Weight; };

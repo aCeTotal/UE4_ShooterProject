@@ -12,6 +12,7 @@ void UItem::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty> & OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UItem, Quantity);
+	DOREPLIFETIME(UItem, Ammo);
 }
 
 bool UItem::IsSupportedForNetworking() const
@@ -40,6 +41,8 @@ UItem::UItem()
 	UseActionText = LOCTEXT("ItemUseActionText", "Use");
 	Weight = 0.f;
 	bStackable = true;
+	bIsAMagazine = false;
+	Ammo = 50;
 	Quantity = 1;
 	MaxStackSize = 2;
 	RepKey = 0;
@@ -50,11 +53,25 @@ void UItem::OnRep_Quantity()
 	OnItemModified.Broadcast();
 }
 
+void UItem::OnRep_Ammo()
+{
+	OnItemModified.Broadcast();
+}
+
 void UItem::SetQuantity(const int32 NewQuantity)
 {
 	if (NewQuantity != Quantity)
 	{
 		Quantity = FMath::Clamp(NewQuantity, 0, bStackable ? MaxStackSize : 1); //Updates Quantity. If bStackable = False, Quantity is set to 1
+		MarkDirtyForReplication();
+	}
+}
+
+void UItem::SetAmmoAmount(const int32 NewAmmoAmount)
+{
+	if (NewAmmoAmount != Ammo)
+	{
+		Ammo = FMath::Clamp(NewAmmoAmount, 0, bIsAMagazine ? Ammo : 0); //Updates Quantity. If bStackable = False, Quantity is set to 1
 		MarkDirtyForReplication();
 	}
 }

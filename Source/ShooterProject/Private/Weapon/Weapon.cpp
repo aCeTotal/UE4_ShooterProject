@@ -338,7 +338,7 @@ int32 AWeapon::GetCurrentAmmo() const
 		{
 			if (UItem* Ammo = Inventory->FindItemByClass(WeaponConfig.MagazineClass))
 			{
-				return Ammo->GetQuantity();
+				return Ammo->GetAmmo();
 			}
 		}
 	}
