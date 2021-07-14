@@ -29,7 +29,7 @@ struct FWeaponData
 
 	//Magazine Size
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ammo)
-	int32 AmmoPerMagazine;
+	int32 MaxAmmo;
 
 	//The item that this weapon uses as ammo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ammo)
@@ -42,7 +42,7 @@ struct FWeaponData
 	//Default values
 	FWeaponData()
 	{
-		AmmoPerMagazine = 20;
+		MaxAmmo = 20;
 		TimeBetweenShots = 0.2f;
 	}	
 };
@@ -121,7 +121,7 @@ protected:
 	void ConsumeMagazine(const int32 Amount);
 
 	//[server] return ammo to the inventory when the weapon is unequipped
-	void ReturnMagazineToInventory();
+	void ReturnMagazineToInventory(int32 OldAmmo);
 
 	//Weapon is being equipped by owner pawn
 	virtual void OnEquip();
@@ -175,11 +175,11 @@ protected:
 
 	//Get current ammo amount (total)
 	UFUNCTION(BlueprintPure, Category = "Weapon")
-	int32 GetCurrentAmmo() const;
+	int32 GetNewAmmo() const;
 
 	//Get current ammo amount (Magazine)
 	UFUNCTION(BlueprintPure, Category = "Weapon")
-	int32 GetCurrentAmmoInMagazine() const;
+	int32 GetCurrentAmmoInWeapon() const;
 
 	//Get Magazine size
 	int32 GetAmmoPerMagazine() const;
@@ -384,7 +384,11 @@ protected:
 
 	//current ammo - inside magazine
 	UPROPERTY(EditAnywhere, Transient, Replicated)
-	int32 CurrentAmmoInMagazine;
+	int32 CurrentAmmoInWeapon;
+
+	//current ammo - inside magazine
+	UPROPERTY(EditAnywhere, Transient, Replicated)
+	int32 OldMagazineAmmoAmount;
 
 	//burst counter, used for replicating fire events to remote clients
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_BurstCounter)

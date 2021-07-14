@@ -39,7 +39,7 @@ AWeapon::AWeapon()
 	AttachSocket = FName("GripPoint");
 	MuzzleAttachPoint = FName("Muzzle");
 
-	CurrentAmmoInMagazine = 0;
+	CurrentAmmoInWeapon = 0;
 	BurstCounter = 0;
 	LastFireTime = 0.0f;
 
@@ -61,7 +61,8 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 	DOREPLIFETIME(AWeapon, PawnOwner);
 
-	DOREPLIFETIME_CONDITION(AWeapon, CurrentAmmoInMagazine, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AWeapon, CurrentAmmoInWeapon, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AWeapon, OldMagazineAmmoAmount, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AWeapon, BurstCounter, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, bPendingReload, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, Item, COND_InitialOnly);
@@ -103,7 +104,7 @@ void AWeapon::UseMagazineAmmo()
 {
 	if (HasAuthority())
 	{
-		--CurrentAmmoInMagazine;
+		--CurrentAmmoInWeapon;
 	}
 }
 
@@ -126,16 +127,16 @@ void AWeapon::ConsumeMagazine(const int32 Amount)
 }
 
 
-void AWeapon::ReturnMagazineToInventory()
+void AWeapon::ReturnMagazineToInventory(int32 OldAmmo)
 {
 	//When the weapon is unequipped or Reloaded before empty, try return the players ammo to their inventory
 	if (HasAuthority())
 	{
-		if (PawnOwner && CurrentAmmoInMagazine > 0)
+		if (PawnOwner && OldAmmo > 0)
 		{
 			if (UInventoryComponent* Inventory = PawnOwner->PlayerInventory)
 			{
-				Inventory->TryAddMagazineFromClass(WeaponConfig.MagazineClass, 1, CurrentAmmoInMagazine);
+				Inventory->TryAddMagazineFromClass(WeaponConfig.MagazineClass, 1, OldAmmo);
 			}
 		}
 	}
@@ -258,11 +259,6 @@ void AWeapon::StartReload(bool bFromReplication)
 			AnimDuration = .5f;
 		}
 
-		if (HasAuthority() && CurrentAmmoInMagazine > 0)
-		{
-			ReturnMagazineToInventory();
-		}
-
 		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &AWeapon::StopReload, AnimDuration, false);
 		if (HasAuthority())
 		{
@@ -290,12 +286,17 @@ void AWeapon::StopReload()
 
 void AWeapon::ReloadWeapon()
 {
-	int32 NewMagazineAmmo = GetCurrentAmmo();
-	//int32 MagazineDelta = FMath::Min(WeaponConfig.AmmoPerMagazine - CurrentAmmoInMagazine, GetCurrentAmmo() - CurrentAmmoInMagazine);
+	int32 NewMagazineAmmo = GetNewAmmo();
 
+	//Returning non-empty magazines to inventory does almost work, but it has some wierd behavior.
+	/**if (CurrentAmmoInWeapon > 0)
+	{
+		ReturnMagazineToInventory(CurrentAmmoInWeapon);
+	}*/
+	
 	if (NewMagazineAmmo > 0)
-	{	
-		CurrentAmmoInMagazine += NewMagazineAmmo;
+	{
+		CurrentAmmoInWeapon += NewMagazineAmmo;
 		ConsumeMagazine(NewMagazineAmmo);
 	}
 	else
@@ -316,7 +317,7 @@ bool AWeapon::CanFire() const
 bool AWeapon::CanReload() const
 {
 	bool bCanReload = PawnOwner != nullptr;
-	bool bGotAmmo = (CurrentAmmoInMagazine < WeaponConfig.AmmoPerMagazine) && (GetCurrentAmmo() - CurrentAmmoInMagazine > 0);
+	bool bGotAmmo = (CurrentAmmoInWeapon < WeaponConfig.MaxAmmo) && (GetNewAmmo() > 0);
 	bool bStateOKToReload = ((CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing));
 	return ((bCanReload == true) && (bGotAmmo == true) && (bStateOKToReload == true));
 }
@@ -327,7 +328,7 @@ EWeaponState AWeapon::GetCurrentState() const
 	return CurrentState;
 }
 
-int32 AWeapon::GetCurrentAmmo() const
+int32 AWeapon::GetNewAmmo() const
 {
 	if (PawnOwner)
 	{
@@ -344,15 +345,15 @@ int32 AWeapon::GetCurrentAmmo() const
 }
 
 
-int32 AWeapon::GetCurrentAmmoInMagazine() const
+int32 AWeapon::GetCurrentAmmoInWeapon() const
 {
-	return CurrentAmmoInMagazine;
+	return CurrentAmmoInWeapon;
 }
 
 
 int32 AWeapon::GetAmmoPerMagazine() const
 {
-	return WeaponConfig.AmmoPerMagazine;
+	return WeaponConfig.MaxAmmo;
 }
 
 
@@ -685,7 +686,7 @@ void AWeapon::HandleReFiring()
 void AWeapon::HandleFiring()
 {
 
-	if ((CurrentAmmoInMagazine > 0) && CanFire())
+	if ((CurrentAmmoInWeapon > 0) && CanFire())
 	{
 		if (GetNetMode() != NM_DedicatedServer)
 		{
@@ -703,7 +704,7 @@ void AWeapon::HandleFiring()
 	}
 	else if (PawnOwner && PawnOwner->IsLocallyControlled())
 	{
-		if (GetCurrentAmmo() == 0 && !bRefiring)
+		if (GetNewAmmo() == 0 && !bRefiring)
 		{
 			PlayWeaponSound(OutOfAmmoSound);
 			AShooterProjectPlayerController* MyPC = Cast<AShooterProjectPlayerController>(PawnOwner->Controller);
@@ -722,12 +723,6 @@ void AWeapon::HandleFiring()
 		if (GetLocalRole())
 		{
 			ServerHandleFiring();
-		}
-
-		// reload after firing last round
-		if (CurrentAmmoInMagazine <= 0 && CanReload())
-		{
-			StartReload();
 		}
 
 		// setup refire timer
@@ -923,7 +918,7 @@ FHitResult AWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTra
 
 void AWeapon::ServerHandleFiring_Implementation()
 {
-	const bool bShouldUpdateAmmo = (CurrentAmmoInMagazine > 0 && CanFire());
+	const bool bShouldUpdateAmmo = (CurrentAmmoInWeapon > 0 && CanFire());
 
 	HandleFiring();
 
