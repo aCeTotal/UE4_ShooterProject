@@ -335,6 +335,8 @@ protected:
 	void StartFire();
 	void StopFire();
 
+	void StartReload();
+
 	void BeginMeleeAttach();
 
 	UFUNCTION(Server, Reliable)

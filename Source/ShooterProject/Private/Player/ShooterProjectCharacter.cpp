@@ -355,6 +355,8 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AShooterProjectCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AShooterProjectCharacter::StopFire);
 
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AShooterProjectCharacter::StartReload);
+
 	//PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShooterProjectCharacter::StartAiming);
 	//PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShooterProjectCharacter::StopAiming);
 
@@ -856,6 +858,14 @@ void AShooterProjectCharacter::StopFire()
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->StopFire();
+	}
+}
+
+void AShooterProjectCharacter::StartReload()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->StartReload();
 	}
 }
 

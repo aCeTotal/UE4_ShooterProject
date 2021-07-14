@@ -121,7 +121,7 @@ protected:
 	void ConsumeMagazine(const int32 Amount);
 
 	//[server] return ammo to the inventory when the weapon is unequipped
-	void ReturnAmmoToInventory();
+	void ReturnMagazineToInventory();
 
 	//Weapon is being equipped by owner pawn
 	virtual void OnEquip();
@@ -383,7 +383,7 @@ protected:
 	float EquipDuration;
 
 	//current ammo - inside magazine
-	UPROPERTY(Transient, Replicated)
+	UPROPERTY(EditAnywhere, Transient, Replicated)
 	int32 CurrentAmmoInMagazine;
 
 	//burst counter, used for replicating fire events to remote clients

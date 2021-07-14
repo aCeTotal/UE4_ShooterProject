@@ -456,7 +456,6 @@ FItemAddResult UInventoryComponent::TryAddMagazine_Internal(class UItem* Item)
 			//Non-stackable should always have a quantity of 1
 			ensure(Item->GetQuantity() == 1);
 
-			AddItem(Item);
 			AddMagazine(Item);
 
 			return FItemAddResult::AddedAll(AddAmount);

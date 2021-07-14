@@ -126,7 +126,7 @@ void AWeapon::ConsumeMagazine(const int32 Amount)
 }
 
 
-void AWeapon::ReturnAmmoToInventory()
+void AWeapon::ReturnMagazineToInventory()
 {
 	//When the weapon is unequipped or Reloaded before empty, try return the players ammo to their inventory
 	if (HasAuthority())
@@ -167,15 +167,6 @@ void AWeapon::OnEquipFinished()
 
 	// Determine the state so that the "Can Reload" checks work
 	DetermineWeaponState();
-
-	if (PawnOwner)
-	{
-		//try to reload empty magazine
-		if (PawnOwner->IsLocallyControlled() && CurrentAmmoInMagazine <= 0 && CanReload())
-		{
-			StartReload();
-		}
-	}
 }
 
 
@@ -202,7 +193,7 @@ void AWeapon::OnUnEquip()
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 	}
 
-	ReturnAmmoToInventory();
+	//ReturnMagazineToInventory();
 	DetermineWeaponState();
 }
 
@@ -267,6 +258,11 @@ void AWeapon::StartReload(bool bFromReplication)
 			AnimDuration = .5f;
 		}
 
+		if (HasAuthority() && CurrentAmmoInMagazine > 0)
+		{
+			ReturnMagazineToInventory();
+		}
+
 		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &AWeapon::StopReload, AnimDuration, false);
 		if (HasAuthority())
 		{
@@ -294,12 +290,13 @@ void AWeapon::StopReload()
 
 void AWeapon::ReloadWeapon()
 {
-	int32 MagazineDelta = FMath::Min(WeaponConfig.AmmoPerMagazine - CurrentAmmoInMagazine, GetCurrentAmmo() - CurrentAmmoInMagazine);
+	int32 NewMagazineAmmo = GetCurrentAmmo();
+	//int32 MagazineDelta = FMath::Min(WeaponConfig.AmmoPerMagazine - CurrentAmmoInMagazine, GetCurrentAmmo() - CurrentAmmoInMagazine);
 
-	if (MagazineDelta > 0)
-	{
-		CurrentAmmoInMagazine += MagazineDelta;
-		ConsumeMagazine(MagazineDelta);
+	if (NewMagazineAmmo > 0)
+	{	
+		CurrentAmmoInMagazine += NewMagazineAmmo;
+		ConsumeMagazine(NewMagazineAmmo);
 	}
 	else
 	{
@@ -703,10 +700,6 @@ void AWeapon::HandleFiring()
 			// update firing FX on remote clients if function was called on server
 			BurstCounter++;
 		}
-	}
-	else if (CanReload())
-	{
-		StartReload();
 	}
 	else if (PawnOwner && PawnOwner->IsLocallyControlled())
 	{
