@@ -318,7 +318,7 @@ void AShooterProjectCharacter::Tick(float DeltaTime)
 	if (IsLocallyControlled())
 	{
 		const float DesiredFOV = IsAiming() ? 70.f : 100.f;
-		FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DesiredFOV, DeltaTime, 10.f));
+		FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DesiredFOV, DeltaTime, 20.f));
 
 		if (EquippedWeapon)
 		{
@@ -376,16 +376,18 @@ void AShooterProjectCharacter::StartAiming()
 {
 	if (CanAim())
 	{
-		SetAiming(true);
+		CurrentOffsetState = EWeaponOffsetState::Aiming;
+		SetAiming(true, CurrentOffsetState);
 	}
 }
 
 void AShooterProjectCharacter::StopAiming()
 {
-	SetAiming(false);
+	CurrentOffsetState = EWeaponOffsetState::Ready;
+	SetAiming(false, CurrentOffsetState);
 }
 
-void AShooterProjectCharacter::SetAiming(const bool bNewAiming)
+void AShooterProjectCharacter::SetAiming(const bool bNewAiming, EWeaponOffsetState NewState)
 {
 	if ((bNewAiming && !CanAim()) || bNewAiming == bIsAiming)
 	{
@@ -394,18 +396,20 @@ void AShooterProjectCharacter::SetAiming(const bool bNewAiming)
 
 	if (!HasAuthority())
 	{
-		ServerSetAiming(bNewAiming);
+		NewState = CurrentOffsetState;
+		ServerSetAiming(bNewAiming, NewState);
 	}
 
 	bIsAiming = bNewAiming;
 }
 
-void AShooterProjectCharacter::ServerSetAiming_Implementation(const bool bNewAiming)
+void AShooterProjectCharacter::ServerSetAiming_Implementation(const bool bNewAiming, EWeaponOffsetState NewState)
 {
-	SetAiming(bNewAiming);
+	CurrentOffsetState = NewState;
+	SetAiming(bNewAiming, NewState);
 }
 
-bool AShooterProjectCharacter::ServerSetAiming_Validate(const bool bNewAiming)
+bool AShooterProjectCharacter::ServerSetAiming_Validate(const bool bNewAiming, EWeaponOffsetState NewState)
 {
 	return true;
 }

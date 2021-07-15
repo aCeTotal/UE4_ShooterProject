@@ -428,10 +428,10 @@ protected:
 	void StartAiming();
 	void StopAiming();
 
-	void SetAiming(const bool bNewAiming);
+	void SetAiming(const bool bNewAiming, EWeaponOffsetState NewState);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetAiming(const bool bNewAiming);
+	void ServerSetAiming(const bool bNewAiming, EWeaponOffsetState NewState);
 
 	UPROPERTY(Transient, Replicated)
 	bool bIsAiming;
