@@ -30,6 +30,8 @@
 
 #define LOCTEXT_NAMESPACE "ShooterProjectCharacter"
 
+static FName Name_AimDownSightSocket("ADSSocket");
+
 //////////////////////////////////////////////////////////////////////////
 // AShooterProjectCharacter
 
@@ -49,6 +51,8 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	//TimerHandle for Pronefix Bool reset
 	ProneToStandDelay = 2.f;
 	ProneToCrouchDelay = 2.f;
+
+	bIsAiming = false;
 	
 	//Set Health
 	MaxHealth = 100.f;
@@ -310,6 +314,23 @@ void AShooterProjectCharacter::Tick(float DeltaTime)
 	{
 		PerformInteractionCheck();
 	}
+
+	if (IsLocallyControlled())
+	{
+		const float DesiredFOV = IsAiming() ? 70.f : 100.f;
+		FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DesiredFOV, DeltaTime, 10.f));
+
+		if (EquippedWeapon)
+		{
+			const FVector ADSLocation = EquippedWeapon->GetWeaponMesh()->GetSocketLocation(Name_AimDownSightSocket);
+			const FVector DefaultCameraLocation = GetMesh()->GetSocketLocation(FName("sHead"));
+
+			const FVector CameraLoc = bIsAiming ? ADSLocation : DefaultCameraLocation;
+
+			const float InterpSpeed = FVector::Dist(ADSLocation, DefaultCameraLocation) / EquippedWeapon->ADSTime;
+			FollowCamera->SetWorldLocation(FMath::VInterpTo(FollowCamera->GetComponentLocation(), CameraLoc, DeltaTime, InterpSpeed));
+		}
+	}
 }
 
 void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -323,7 +344,8 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentPawnState);
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentOffsetState);
 	DOREPLIFETIME(AShooterProjectCharacter, ProneFix);
-	//DOREPLIFETIME_CONDITION(AShooterProjectCharacter, Health, COND_OwnerOnly);
+
+	DOREPLIFETIME_CONDITION(AShooterProjectCharacter, bIsAiming, COND_SkipOwner);
 }
 
 
@@ -345,6 +367,49 @@ float AShooterProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent cons
 	return DamageAmount;
 }
 
+bool AShooterProjectCharacter::CanAim() const
+{
+	return EquippedWeapon != nullptr;
+}
+
+void AShooterProjectCharacter::StartAiming()
+{
+	if (CanAim())
+	{
+		SetAiming(true);
+	}
+}
+
+void AShooterProjectCharacter::StopAiming()
+{
+	SetAiming(false);
+}
+
+void AShooterProjectCharacter::SetAiming(const bool bNewAiming)
+{
+	if ((bNewAiming && !CanAim()) || bNewAiming == bIsAiming)
+	{
+		return;
+	}
+
+	if (!HasAuthority())
+	{
+		ServerSetAiming(bNewAiming);
+	}
+
+	bIsAiming = bNewAiming;
+}
+
+void AShooterProjectCharacter::ServerSetAiming_Implementation(const bool bNewAiming)
+{
+	SetAiming(bNewAiming);
+}
+
+bool AShooterProjectCharacter::ServerSetAiming_Validate(const bool bNewAiming)
+{
+	return true;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -355,8 +420,8 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AShooterProjectCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AShooterProjectCharacter::StopFire);
 
-	//PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShooterProjectCharacter::StartAiming);
-	//PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShooterProjectCharacter::StopAiming);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShooterProjectCharacter::StartAiming);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShooterProjectCharacter::StopAiming);
 
 	//PlayerInputComponent->BindAction("RestWeapon", IE_Pressed, this, &AShooterProjectCharacter::StartResting);
 	//PlayerInputComponent->BindAction("RestWeapon", IE_Released, this, &AShooterProjectCharacter::StopResting);

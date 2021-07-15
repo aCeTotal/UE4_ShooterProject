@@ -295,6 +295,7 @@ void AWeapon::ReloadWeapon()
 	
 	if (NewMagazineAmmo > 0)
 	{
+		CurrentAmmoInWeapon = 0;
 		CurrentAmmoInWeapon += NewMagazineAmmo;
 		ConsumeMagazine(NewMagazineAmmo);
 	}

@@ -421,6 +421,21 @@ protected:
 	virtual void Restart() override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	// Aiming
+
+	bool CanAim() const;
+
+	void StartAiming();
+	void StopAiming();
+
+	void SetAiming(const bool bNewAiming);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetAiming(const bool bNewAiming);
+
+	UPROPERTY(Transient, Replicated)
+	bool bIsAiming;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -429,5 +444,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };
+	
+	UFUNCTION(BlueprintPure, Category = "Weapons")
+	FORCEINLINE bool IsAiming() const { return bIsAiming;}
 };
 
