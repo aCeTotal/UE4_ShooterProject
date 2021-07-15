@@ -237,8 +237,8 @@ UItem* UInventoryComponent::AddMagazine(class UItem* Item)
 		{
 		//Duplicates the object and creates a new one with the correct owner.
 		UItem* NewItem = NewObject<UItem>(GetOwner(), Item->GetClass());
-		NewItem->SetQuantity(Item->GetQuantity());
-		NewItem->SetAmmoAmount(Item->GetAmmo());
+		NewItem->SetQuantity(1);
+		NewItem->SetAmmoAmount(1);
 		NewItem->OwningInventory = this;
 		NewItem->AddedToInventory(this);
 		Items.Add(NewItem);

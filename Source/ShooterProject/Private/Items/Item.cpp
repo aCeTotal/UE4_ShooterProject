@@ -71,7 +71,7 @@ void UItem::SetAmmoAmount(const int32 NewAmmoAmount)
 {
 	if (NewAmmoAmount != Ammo)
 	{
-		Ammo = FMath::Clamp(NewAmmoAmount, 0, bIsAMagazine ? Ammo : 0); //Updates Quantity. If bStackable = False, Quantity is set to 1
+		Ammo = NewAmmoAmount;
 		MarkDirtyForReplication();
 	}
 }

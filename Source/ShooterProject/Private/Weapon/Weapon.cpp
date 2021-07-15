@@ -62,7 +62,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(AWeapon, PawnOwner);
 
 	DOREPLIFETIME_CONDITION(AWeapon, CurrentAmmoInWeapon, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AWeapon, OldMagazineAmmoAmount, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AWeapon, BurstCounter, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, bPendingReload, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, Item, COND_InitialOnly);
@@ -132,7 +131,7 @@ void AWeapon::ReturnMagazineToInventory(int32 OldAmmo)
 	//When the weapon is unequipped or Reloaded before empty, try return the players ammo to their inventory
 	if (HasAuthority())
 	{
-		if (PawnOwner && OldAmmo > 0)
+		if (PawnOwner)
 		{
 			if (UInventoryComponent* Inventory = PawnOwner->PlayerInventory)
 			{
@@ -534,7 +533,7 @@ void AWeapon::SimulateWeaponFire()
 	{
 		if (FireCameraShake != NULL)
 		{
-			PC->ClientStartCameraShake(FireCameraShake, 1);
+			PC->ClientStartCameraShake(FireCameraShake, 2);
 		}
 		if (FireForceFeedback != NULL)
 		{
@@ -636,7 +635,7 @@ void AWeapon::FireShot()
 			if (RecoilCurve)
 			{
 				const FVector2D RecoilAmount(RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).X, RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).Y);
-				//PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
+				PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
 			}
 
 			FVector SocketLoc;
@@ -649,7 +648,7 @@ void AWeapon::FireShot()
 			QueryParams.AddIgnoredActor(this);
 			QueryParams.AddIgnoredActor(PawnOwner);
 
-			FVector FireDir = SocketRot.Vector();// PawnOwner->IsAiming() ? CamRot.Vector() : FMath::VRandCone(CamRot.Vector(), FMath::DegreesToRadians(PawnOwner->IsAiming() ? 0.f : 5.f));
+			FVector FireDir = SocketRot.Vector();
 			FVector TraceStart = SocketLoc;
 			FVector TraceEnd = (FireDir * HitScanConfig.Distance) + SocketLoc;
 

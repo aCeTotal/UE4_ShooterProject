@@ -222,7 +222,7 @@ public:
 
 	//Weapon mesh
 	UPROPERTY(EditAnywhere, Category = Components)
-	USkeletalMeshComponent* WeaponMesh;
+	USkeletalMeshComponent* WeaponMesh;	
 
 protected:
 

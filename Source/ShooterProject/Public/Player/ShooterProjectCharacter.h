@@ -322,6 +322,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnHealthModified(const float HealthDelta);
 
+	void StartReload();
+
+	
+
 
 
 protected:
@@ -334,8 +338,6 @@ protected:
 
 	void StartFire();
 	void StopFire();
-
-	void StartReload();
 
 	void BeginMeleeAttach();
 
@@ -424,5 +426,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };
 };
 
