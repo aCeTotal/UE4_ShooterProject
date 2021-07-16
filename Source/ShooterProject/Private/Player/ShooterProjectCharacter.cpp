@@ -81,7 +81,6 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>("PlayerInventory");
 	PlayerInventory->SetCapacity(20);
 	PlayerInventory->SetWeightCapacity(80.f);
-
 	
 	LootPlayerInteraction = CreateDefaultSubobject<UInteractionComponent>("PlayerInteraction");
 	LootPlayerInteraction->InteractibleActionText = LOCTEXT("LootPlayerText", "Loot");
@@ -318,7 +317,7 @@ void AShooterProjectCharacter::Tick(float DeltaTime)
 	if (IsLocallyControlled())
 	{
 		const float DesiredFOV = IsAiming() ? 70.f : 100.f;
-		FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DesiredFOV, DeltaTime, 20.f));
+		FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DesiredFOV, DeltaTime, 25.f));
 
 		if (EquippedWeapon)
 		{
@@ -328,7 +327,7 @@ void AShooterProjectCharacter::Tick(float DeltaTime)
 			const FVector CameraLoc = bIsAiming ? ADSLocation : DefaultCameraLocation;
 
 			const float InterpSpeed = FVector::Dist(ADSLocation, DefaultCameraLocation) / EquippedWeapon->ADSTime;
-			FollowCamera->SetWorldLocation(FMath::VInterpTo(FollowCamera->GetComponentLocation(), CameraLoc, DeltaTime, InterpSpeed));
+			CameraBoom->SetWorldLocation(FMath::VInterpTo(CameraBoom->GetComponentLocation(), CameraLoc, DeltaTime, InterpSpeed));
 		}
 	}
 }

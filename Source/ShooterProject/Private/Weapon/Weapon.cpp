@@ -43,7 +43,7 @@ AWeapon::AWeapon()
 	BurstCounter = 0;
 	LastFireTime = 0.0f;
 
-	ADSTime = 0.5f;
+	ADSTime = 1.f;
 	RecoilResetSpeed = 5.f;
 	RecoilSpeed = 10.f;
 
