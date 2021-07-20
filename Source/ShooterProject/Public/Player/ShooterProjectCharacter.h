@@ -80,6 +80,14 @@ class AShooterProjectCharacter : public ACharacter
 public:
 	AShooterProjectCharacter();
 
+	/**anim instance for animating just legs */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	TSubclassOf<class UAnimInstance> Character3PAnimClass;
+
+	/**anim instance for animating just legs, since we animate legs seperately in ADS */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	TSubclassOf<class UAnimInstance> LegsAnimClass;
+
 	//The Mesh to have equipped if we don't have an item equipped - ie. the bare skin meshes.
 	UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMesh*> NakedMeshes;

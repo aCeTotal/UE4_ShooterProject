@@ -903,6 +903,23 @@ void AShooterProjectCharacter::OnRep_EquippedWeapon()
 	{
 		EquippedWeapon->OnEquip();
 	}
+
+	if (IsLocallyControlled())
+	{
+		//Animate bottom half seperately from top half so aim down sights isn't wobbly. 
+		if (EquippedWeapon)
+		{
+			LegsMesh->SetAnimInstanceClass(LegsAnimClass);
+			LegsMesh->SetMasterPoseComponent(nullptr, true);
+			FeetMesh->SetMasterPoseComponent(LegsMesh, true);
+		}
+		else // revert animation changes 
+		{
+			LegsMesh->SetAnimInstanceClass(nullptr);
+			LegsMesh->SetMasterPoseComponent(GetMesh(), true);
+			FeetMesh->SetMasterPoseComponent(GetMesh(), true);
+		}
+	}
 }
 
 void AShooterProjectCharacter::StartFire()

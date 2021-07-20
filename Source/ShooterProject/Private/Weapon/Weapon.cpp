@@ -28,6 +28,13 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	RootComponent = WeaponMesh;
 
+	SightAttachment = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SightAttachment"));
+	SightAttachment->bReceivesDecals = false;
+	SightAttachment->SetCollisionObjectType(ECC_WorldDynamic);
+	SightAttachment->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SightAttachment->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SightAttachment->SetupAttachment(WeaponMesh, FName("SightsSocket"));
+
 	bLoopedMuzzleFX = false;
 	bLoopedFireAnim = false;
 	bPlayingFireAnim = false;

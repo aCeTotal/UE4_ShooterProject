@@ -222,7 +222,10 @@ public:
 
 	//Weapon mesh
 	UPROPERTY(EditAnywhere, Category = Components)
-	USkeletalMeshComponent* WeaponMesh;	
+	USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	class UStaticMeshComponent* SightAttachment;
 
 protected:
 
@@ -512,4 +515,9 @@ protected:
 
 	//Find hit
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const;
+
+public:
+
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE class UStaticMeshComponent* GetSightAttachment() const { return SightAttachment; }
 };
