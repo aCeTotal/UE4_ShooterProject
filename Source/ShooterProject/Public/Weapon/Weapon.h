@@ -519,5 +519,6 @@ protected:
 public:
 
 	/** Returns FollowCamera subobject **/
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE class UStaticMeshComponent* GetSightAttachment() const { return SightAttachment; }
 };

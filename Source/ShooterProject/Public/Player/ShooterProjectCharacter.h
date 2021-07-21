@@ -80,14 +80,6 @@ class AShooterProjectCharacter : public ACharacter
 public:
 	AShooterProjectCharacter();
 
-	/**anim instance for animating just legs */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
-	TSubclassOf<class UAnimInstance> Character3PAnimClass;
-
-	/**anim instance for animating just legs, since we animate legs seperately in ADS */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
-	TSubclassOf<class UAnimInstance> LegsAnimClass;
-
 	//The Mesh to have equipped if we don't have an item equipped - ie. the bare skin meshes.
 	UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMesh*> NakedMeshes;
@@ -96,27 +88,35 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMeshComponent*> PlayerMeshes;
 
-	/**Modular character */
+	/** Pawn mesh: 1st person view (Upperbody; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	class USkeletalMeshComponent* Mesh1P;
+
+	/** Pawn mesh: 1st person view (Legs; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	class USkeletalMeshComponent* Legs1P;
+
+	/**Modular character seen by everyone else*/
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* HelmetMesh;
+	class USkeletalMeshComponent* HelmetMesh3P;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* ChestMesh;
+	class USkeletalMeshComponent* ChestMesh3P;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* LegsMesh;
+	class USkeletalMeshComponent* LegsMesh3P;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* FeetMesh;
+	class USkeletalMeshComponent* FeetMesh3P;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* VestMesh;
+	class USkeletalMeshComponent* VestMesh3P;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* HandsMesh;
+	class USkeletalMeshComponent* HandsMesh3P;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class USkeletalMeshComponent* BackpackMesh;
+	class USkeletalMeshComponent* BackpackMesh3P;
 
 	UFUNCTION(BlueprintCallable)
 	void SetLootSource(class UInventoryComponent* NewLootSource);

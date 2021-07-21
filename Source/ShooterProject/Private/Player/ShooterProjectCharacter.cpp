@@ -89,32 +89,47 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	LootPlayerInteraction->SetActive(false, true);
 	LootPlayerInteraction->bAutoActivate = false;
 
-	// Create a camera boom and attach it to Head socket.
+	/*// Create a camera boom and attach it to Head socket.
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh(), FName("sHead"));
 	CameraBoom->TargetArmLength = 0.f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller*/
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera->SetupAttachment(GetCapsuleComponent());
+	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
 
-	//Modular Character
-	HelmetMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Helmet, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HelmetMesh")));
-	ChestMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Chest, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChestMesh")));
-	LegsMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Legs, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LegsMesh")));
-	FeetMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Feet, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FeetMesh")));
-	VestMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Vest, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VestMesh")));
-	HandsMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Hands, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandsMesh")));
-	BackpackMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Backpack, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("BackpackMesh")));
+	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
+	Mesh1P->SetOnlyOwnerSee(true);
+	Mesh1P->SetupAttachment(FollowCamera);
+	Mesh1P->bCastDynamicShadow = false;
+	Mesh1P->CastShadow = false;
 
-	//Tell all the body meshes to use the head mesh for animation
+	Legs1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
+	Legs1P->SetOnlyOwnerSee(true);
+	Legs1P->SetupAttachment(Mesh1P);
+	Legs1P->bCastDynamicShadow = false;
+	Legs1P->CastShadow = false;
+
+	//3P - Modular Character
+	HelmetMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Helmet, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HelmetMesh")));
+	ChestMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Chest, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ChestMesh")));
+	LegsMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Legs, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LegsMesh")));
+	FeetMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Feet, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FeetMesh")));
+	VestMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Vest, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VestMesh")));
+	HandsMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Hands, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandsMesh")));
+	BackpackMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Backpack, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("BackpackMesh")));
+
+	//Tell all the 3P body meshes to use the 3P head mesh for animation
 	for (auto& PlayerMesh : PlayerMeshes)
 	{
 		USkeletalMeshComponent* MeshComponent = PlayerMesh.Value;
 		MeshComponent->SetupAttachment(GetMesh());
 		MeshComponent->SetMasterPoseComponent(GetMesh());
+		MeshComponent->SetOwnerNoSee(true);
+		MeshComponent->bCastDynamicShadow = true;
+		MeshComponent->CastShadow = true;
 	}
 
 	PlayerMeshes.Add(EEquippableSlot::EIS_Head, GetMesh());
@@ -902,23 +917,6 @@ void AShooterProjectCharacter::OnRep_EquippedWeapon()
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->OnEquip();
-	}
-
-	if (IsLocallyControlled())
-	{
-		//Animate bottom half seperately from top half so aim down sights isn't wobbly. 
-		if (EquippedWeapon)
-		{
-			LegsMesh->SetAnimInstanceClass(LegsAnimClass);
-			LegsMesh->SetMasterPoseComponent(nullptr, true);
-			FeetMesh->SetMasterPoseComponent(LegsMesh, true);
-		}
-		else // revert animation changes 
-		{
-			LegsMesh->SetAnimInstanceClass(nullptr);
-			LegsMesh->SetMasterPoseComponent(GetMesh(), true);
-			FeetMesh->SetMasterPoseComponent(GetMesh(), true);
-		}
 	}
 }
 
