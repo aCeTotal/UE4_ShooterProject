@@ -75,7 +75,7 @@ class AShooterProjectCharacter : public ACharacter
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
+	class UCameraComponent* FirstPersonCamera;
 
 public:
 	AShooterProjectCharacter();
@@ -90,11 +90,11 @@ public:
 
 	/** Pawn mesh: 1st person view (Upperbody; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
-	class USkeletalMeshComponent* Mesh1P;
+	class USkeletalMeshComponent* ArmsMesh1P;
 
 	/** Pawn mesh: 1st person view (Legs; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
-	class USkeletalMeshComponent* Legs1P;
+	class USkeletalMeshComponent* HandMesh1P;
 
 	/**Modular character seen by everyone else*/
 	UPROPERTY(EditAnywhere, Category = "Components")
@@ -452,7 +452,9 @@ public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FirstPersonCamera; }
+	/** Returns Arm Mesh subobject **/
+	FORCEINLINE class USkeletalMeshComponent* Get1PArmMesh() const { return ArmsMesh1P; }
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };

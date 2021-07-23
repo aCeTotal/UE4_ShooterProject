@@ -95,22 +95,27 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	CameraBoom->TargetArmLength = 0.f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller*/
 
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(GetCapsuleComponent());
-	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
+	// Create a CameraComponent	
+	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCamera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	FirstPersonCamera->bUsePawnControlRotation = true;
 
-	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FollowCamera);
-	Mesh1P->bCastDynamicShadow = false;
-	Mesh1P->CastShadow = false;
+	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
+	ArmsMesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadMesh1P"));
+	ArmsMesh1P->SetOnlyOwnerSee(true);
+	ArmsMesh1P->SetupAttachment(FirstPersonCamera);
+	ArmsMesh1P->bCastDynamicShadow = false;
+	ArmsMesh1P->CastShadow = false;
+	ArmsMesh1P->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
+	ArmsMesh1P->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
-	Legs1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Legs1P->SetOnlyOwnerSee(true);
-	Legs1P->SetupAttachment(Mesh1P);
-	Legs1P->bCastDynamicShadow = false;
-	Legs1P->CastShadow = false;
+	HandMesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandMesh1P"));
+	HandMesh1P->SetOnlyOwnerSee(true);
+	HandMesh1P->SetupAttachment(ArmsMesh1P);
+	HandMesh1P->SetMasterPoseComponent(ArmsMesh1P);
+	HandMesh1P->bCastDynamicShadow = false;
+	HandMesh1P->CastShadow = false;
 
 	//3P - Modular Character
 	HelmetMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Helmet, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HelmetMesh")));
@@ -329,10 +334,10 @@ void AShooterProjectCharacter::Tick(float DeltaTime)
 		PerformInteractionCheck();
 	}
 
-	if (IsLocallyControlled())
+	/*if (IsLocallyControlled())
 	{
 		const float DesiredFOV = IsAiming() ? 70.f : 100.f;
-		FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DesiredFOV, DeltaTime, 25.f));
+		FirstPersonCamera->SetFieldOfView(FMath::FInterpTo(FirstPersonCamera->FieldOfView, DesiredFOV, DeltaTime, 25.f));
 
 		if (EquippedWeapon)
 		{
@@ -344,7 +349,7 @@ void AShooterProjectCharacter::Tick(float DeltaTime)
 			const float InterpSpeed = FVector::Dist(ADSLocation, DefaultCameraLocation) / EquippedWeapon->ADSTime;
 			CameraBoom->SetWorldLocation(FMath::VInterpTo(CameraBoom->GetComponentLocation(), CameraLoc, DeltaTime, InterpSpeed));
 		}
-	}
+	}*/
 }
 
 void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -955,8 +960,8 @@ void AShooterProjectCharacter::BeginMeleeAttach()
 		FHitResult Hit;
 		FCollisionShape Shape = FCollisionShape::MakeSphere(15.f);
         
-		FVector StartTrace = FollowCamera->GetComponentLocation();
-		FVector EndTrace = (FollowCamera->GetComponentRotation().Vector() * MeleeAttachDistance) + StartTrace;
+		FVector StartTrace = FirstPersonCamera->GetComponentLocation();
+		FVector EndTrace = (FirstPersonCamera->GetComponentRotation().Vector() * MeleeAttachDistance) + StartTrace;
 
 		
 		FCollisionQueryParams QueryParams = FCollisionQueryParams("MeleeSweep", false, this);
