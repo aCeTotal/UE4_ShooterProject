@@ -931,10 +931,6 @@ void AShooterProjectCharacter::StartFire()
 	{
 		EquippedWeapon->StartFire();
 	}
-	else
-	{
-		BeginMeleeAttach();
-	}
 }
 
 void AShooterProjectCharacter::StopFire()

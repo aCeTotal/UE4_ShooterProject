@@ -453,7 +453,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FirstPersonCamera; }
-	/** Returns Arm Mesh subobject **/
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE class USkeletalMeshComponent* Get1PArmMesh() const { return ArmsMesh1P; }
 
 	UFUNCTION(BlueprintPure)
