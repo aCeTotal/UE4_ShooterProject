@@ -30,11 +30,18 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	FTransform SightTransform;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	float AimAlpha;
+
+	bool bInterpAiming;
+
 protected:
 
 	//Functions used to get the weapon sight in front of the camera
 	void SetSightTransform();
 	void SetRelativeHandTransform();
+
+	void InterpAiming();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsInAir;
@@ -81,6 +88,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	AWeapon* CurrentWeapon;
+
+public:
+
+	void SetAiming(bool bNewAiming);
 
 private:
 

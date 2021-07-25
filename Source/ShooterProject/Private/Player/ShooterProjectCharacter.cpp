@@ -4,7 +4,6 @@
 
 #include "DrawDebugHelpers.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
-#include "ToolContextInterfaces.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -13,7 +12,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/PlayerState.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Items/EquippableItem.h"
 #include "Items/GearItem.h"
 #include "Items/WeaponItem.h"
@@ -27,6 +25,8 @@
 #include "Weapon/MeleeDamage.h"
 #include "Weapon/Weapon.h"
 #include "World/Pickup.h"
+
+class UPlayerAnimInstance;
 
 #define LOCTEXT_NAMESPACE "ShooterProjectCharacter"
 
@@ -306,6 +306,8 @@ void AShooterProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PlayerAnimInstance = Cast<UPlayerAnimInstance>(Get1PMesh()->GetAnimInstance());
+
 	//Bind interact to BeginLooting-function that sets Player Inventory as the LootSource.
 	LootPlayerInteraction->OnInteract.AddDynamic(this, &AShooterProjectCharacter::BeginLootingPlayer);
 
@@ -319,7 +321,8 @@ void AShooterProjectCharacter::BeginPlay()
 	for (auto& PlayerMesh : PlayerMeshes)
 	{
 		NakedMeshes.Add(PlayerMesh.Key, PlayerMesh.Value->SkeletalMesh);
-	}	
+	}
+
 }
 
 
@@ -395,40 +398,41 @@ void AShooterProjectCharacter::StartAiming()
 {
 	if (CanAim())
 	{
-		CurrentOffsetState = EWeaponOffsetState::Aiming;
-		SetAiming(true, CurrentOffsetState);
+		SetAiming(true);
 	}
 }
 
 void AShooterProjectCharacter::StopAiming()
 {
-	CurrentOffsetState = EWeaponOffsetState::Ready;
-	SetAiming(false, CurrentOffsetState);
+	SetAiming(false);
 }
 
-void AShooterProjectCharacter::SetAiming(const bool bNewAiming, EWeaponOffsetState NewState)
+void AShooterProjectCharacter::SetAiming(const bool bNewAiming)
 {
-	if ((bNewAiming && !CanAim()) || bNewAiming == bIsAiming)
+	/*if ((bNewAiming && !CanAim()) || bNewAiming == bIsAiming)
 	{
 		return;
+	}*/
+
+	bIsAiming = bNewAiming;
+
+	if (PlayerAnimInstance)
+	{
+		PlayerAnimInstance->SetAiming(bIsAiming);
 	}
 
 	if (!HasAuthority())
 	{
-		NewState = CurrentOffsetState;
-		ServerSetAiming(bNewAiming, NewState);
+		ServerSetAiming(bNewAiming);
 	}
-
-	bIsAiming = bNewAiming;
 }
 
-void AShooterProjectCharacter::ServerSetAiming_Implementation(const bool bNewAiming, EWeaponOffsetState NewState)
+void AShooterProjectCharacter::ServerSetAiming_Implementation(const bool bNewAiming)
 {
-	CurrentOffsetState = NewState;
-	SetAiming(bNewAiming, NewState);
+	SetAiming(bNewAiming);
 }
 
-bool AShooterProjectCharacter::ServerSetAiming_Validate(const bool bNewAiming, EWeaponOffsetState NewState)
+bool AShooterProjectCharacter::ServerSetAiming_Validate(const bool bNewAiming)
 {
 	return true;
 }

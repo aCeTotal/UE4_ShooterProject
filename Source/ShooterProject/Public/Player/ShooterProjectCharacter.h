@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "PlayerAnimInstance.h"
 #include "GameFramework/Character.h"
 #include "Items/EquippableItem.h"
 #include "Components/BoxComponent.h"
@@ -340,6 +342,9 @@ public:
 
 protected:
 
+	UPROPERTY()
+	UPlayerAnimInstance* PlayerAnimInstance;
+
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_EquippedWeapon)
 	class AWeapon* EquippedWeapon;
 
@@ -438,10 +443,10 @@ protected:
 	void StartAiming();
 	void StopAiming();
 
-	void SetAiming(const bool bNewAiming, EWeaponOffsetState NewState);
+	void SetAiming(const bool bNewAiming);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetAiming(const bool bNewAiming, EWeaponOffsetState NewState);
+	void ServerSetAiming(const bool bNewAiming);
 
 	UPROPERTY(Transient, Replicated)
 	bool bIsAiming;

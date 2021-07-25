@@ -12,9 +12,12 @@
 UPlayerAnimInstance::UPlayerAnimInstance()
 {
 	bIsInAir = false;
+	bInterpAiming = false;
+	bIsAiming = false;
 	bBlockAimoffset = false;
 	Speed = 0.f;
 	Direction = 0.f;
+	AimAlpha = 0.0f;
 }
 
 
@@ -60,17 +63,22 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			bIsProning = Character->CurrentPawnState == EPawnState::Prone;
 			
 			// Weapon AimOffset States. Changing the upper-body basepose and selecting the correct aimoffset.
-			bIsResting = Character->CurrentOffsetState == EWeaponOffsetState::Resting;
-			bIsReady = Character->CurrentOffsetState == EWeaponOffsetState::Ready;
-			bIsAiming = Character->CurrentOffsetState == EWeaponOffsetState::Aiming;
+			//bIsResting = Character->IsAiming() == true;
+			bIsReady = Character->IsAiming() == false;
+			bIsAiming = Character->IsAiming() == true;
 		}
 	}
 
-	//Call the functions only when a weapon is equipped
+	//Call the Transform functions only when a weapon is equipped
 	if (Character && bWeaponEquipped)
 	{
 		SetSightTransform();
 		SetRelativeHandTransform();
+	}
+
+	if (bInterpAiming)
+	{
+		InterpAiming();
 	}
 }
 
@@ -106,6 +114,26 @@ void UPlayerAnimInstance::SetRelativeHandTransform()
 
 		RelativeHandTransform = UKismetMathLibrary::MakeRelativeTransform(SightSocketTransform, HandTransform);
 	}
+}
+
+void UPlayerAnimInstance::InterpAiming()
+{
+	AimAlpha = UKismetMathLibrary::FInterpTo(AimAlpha, static_cast<float>(bIsAiming), GetWorld()->GetDeltaSeconds(), 8.0f);
+
+	if (AimAlpha >= 1.0f || AimAlpha <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ALPHA: %f"), AimAlpha);
+		bInterpAiming = false;
+	}
+}
+
+void UPlayerAnimInstance::SetAiming(bool bNewAiming)
+{
+	if (bIsAiming != bNewAiming)
+	{
+		bIsAiming = bNewAiming;
+		bInterpAiming = true;
+	}	
 }
 
 //Calculate direction
