@@ -280,8 +280,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	TSubclassOf<class APickup> PickupClass;
 
-public:
-
 	bool EquipItem(class UEquippableItem* Item);
 	bool UnEquipItem(class UEquippableItem* Item);
 
@@ -301,7 +299,7 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE TMap<EEquippableSlot, UEquippableItem*> GetEquippedItems() const { return EquippedItems; };
 
-	UFUNCTION(BlueprintCallable, Category = "Weapons")
+	UFUNCTION(BlueprintPure, Category = "Weapons")
 	FORCEINLINE class AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 
 
@@ -452,10 +450,12 @@ public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FirstPersonCamera; }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE class USkeletalMeshComponent* Get1PArmMesh() const { return ArmsMesh1P; }
+	FORCEINLINE class UCameraComponent* Get1PCamera() const { return FirstPersonCamera; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE class USkeletalMeshComponent* Get1PMesh() const { return ArmsMesh1P; }
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };

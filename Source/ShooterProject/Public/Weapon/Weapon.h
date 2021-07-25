@@ -225,7 +225,16 @@ public:
 	USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class UStaticMeshComponent* SightAttachment;
+	class UStaticMeshComponent* PrimarySight;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	class UStaticMeshComponent* SecondarySight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Components")
+	class UStaticMeshComponent* CurrentSight;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	float DistanceToSight;
 
 protected:
 
@@ -520,5 +529,5 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE class UStaticMeshComponent* GetSightAttachment() const { return SightAttachment; }
+	FORCEINLINE class UStaticMeshComponent* GetCurrentSight() const { return CurrentSight; }
 };

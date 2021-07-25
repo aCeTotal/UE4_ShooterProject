@@ -5,6 +5,8 @@
 
 #include "GameFramework/PawnMovementComponent.h"
 #include "Player/ShooterProjectCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Engine.h"
 
 UPlayerAnimInstance::UPlayerAnimInstance()
@@ -21,7 +23,7 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 
 	// Cache pawn
-	Owner = TryGetPawnOwner();
+	Character = Cast<AShooterProjectCharacter>(TryGetPawnOwner());
 }
 
 
@@ -29,43 +31,82 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	// ensure that owner is valid
-	if (!Owner)
+	// ensure that Character is valid
+	if (!Character)
 	{
 		return;
 	}
 
-	if (Owner->IsA(AShooterProjectCharacter::StaticClass()))
+	if (Character->IsA(AShooterProjectCharacter::StaticClass()))
 	{
-		AShooterProjectCharacter* PlayerCharacter = Cast<AShooterProjectCharacter>(Owner);
-		if (PlayerCharacter)
+		if (Character)
 		{
-			bWeaponEquipped = PlayerCharacter->IsHoldingWeapon();
-			bIsInAir = PlayerCharacter->GetMovementComponent()->IsFalling();
-			bIsLocallyControlled = PlayerCharacter->IsLocallyControlled();
-			Speed = PlayerCharacter->GetVelocity().Size();
-			Velocity = PlayerCharacter->GetVelocity();
-			ActorRotation = PlayerCharacter->GetActorRotation();
+			bWeaponEquipped = Character->IsHoldingWeapon();
+			bIsInAir = Character->GetMovementComponent()->IsFalling();
+			bIsLocallyControlled = Character->IsLocallyControlled();
+			Speed = Character->GetVelocity().Size();
+			Velocity = Character->GetVelocity();
+			ActorRotation = Character->GetActorRotation();
 			Direction = CalculateDirection(Velocity, ActorRotation);
 
-			CurrentWeapon = PlayerCharacter->GetEquippedWeapon();
+			CurrentWeapon = Character->GetEquippedWeapon();
 
 			//Prone fix - When pawn are leaving prone state, all aimoffsets are disabled.
-			bBlockAimoffset = PlayerCharacter->ProneFix == EPawnState::Prone;
+			bBlockAimoffset = Character->ProneFix == EPawnState::Prone;
 
 			// Stance States.
-			bIsStanding = PlayerCharacter->CurrentPawnState == EPawnState::Stand;
-			bIsCrouching = PlayerCharacter->CurrentPawnState == EPawnState::Crouch;
-			bIsProning = PlayerCharacter->CurrentPawnState == EPawnState::Prone;
+			bIsStanding = Character->CurrentPawnState == EPawnState::Stand;
+			bIsCrouching = Character->CurrentPawnState == EPawnState::Crouch;
+			bIsProning = Character->CurrentPawnState == EPawnState::Prone;
 			
 			// Weapon AimOffset States. Changing the upper-body basepose and selecting the correct aimoffset.
-			bIsResting = PlayerCharacter->CurrentOffsetState == EWeaponOffsetState::Resting;
-			bIsReady = PlayerCharacter->CurrentOffsetState == EWeaponOffsetState::Ready;
-			bIsAiming = PlayerCharacter->CurrentOffsetState == EWeaponOffsetState::Aiming;
+			bIsResting = Character->CurrentOffsetState == EWeaponOffsetState::Resting;
+			bIsReady = Character->CurrentOffsetState == EWeaponOffsetState::Ready;
+			bIsAiming = Character->CurrentOffsetState == EWeaponOffsetState::Aiming;
 		}
+	}
+
+	//Call the functions only when a weapon is equipped
+	if (Character && bWeaponEquipped)
+	{
+		SetSightTransform();
+		SetRelativeHandTransform();
 	}
 }
 
+
+void UPlayerAnimInstance::SetSightTransform()
+{
+	if (Character)
+	{
+		FTransform CameraTransform = Character->Get1PCamera()->GetComponentTransform();
+		FTransform MeshTransform = Character->Get1PMesh()->GetComponentTransform();
+
+		FTransform Relative = UKismetMathLibrary::MakeRelativeTransform(CameraTransform, MeshTransform);
+
+		FVector NewSightVector = Relative.GetLocation();
+
+		FVector ForwardVector = Relative.GetRotation().GetForwardVector();
+		ForwardVector *= CurrentWeapon->DistanceToSight;
+
+		NewSightVector += ForwardVector;
+
+		SightTransform.SetLocation(NewSightVector);
+		SightTransform.SetRotation(Relative.Rotator().Quaternion());
+	}
+}
+
+
+void UPlayerAnimInstance::SetRelativeHandTransform()
+{
+	if (Character && CurrentWeapon && CurrentWeapon->GetCurrentSight())
+	{
+		FTransform HandTransform = Character->Get1PMesh()->GetSocketTransform(FName("hand_r"));
+		FTransform SightSocketTransform = CurrentWeapon->GetCurrentSight()->GetSocketTransform(FName("S_Aim"));
+
+		RelativeHandTransform = UKismetMathLibrary::MakeRelativeTransform(SightSocketTransform, HandTransform);
+	}
+}
 
 //Calculate direction
 float UPlayerAnimInstance::CalculateDirection(const FVector& PlayerVelocity, const FRotator& PlayerRotation) const

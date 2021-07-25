@@ -8,6 +8,9 @@
 
 #include "PlayerAnimInstance.generated.h"
 
+
+class AShooterProjectCharacter;
+
 /**
  * 
  */
@@ -18,50 +21,65 @@ class SHOOTERPROJECT_API UPlayerAnimInstance : public UAnimInstance
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Character")
+	AShooterProjectCharacter* Character;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	FTransform RelativeHandTransform;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	FTransform SightTransform;
+
+protected:
+
+	//Functions used to get the weapon sight in front of the camera
+	void SetSightTransform();
+	void SetRelativeHandTransform();
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsInAir;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bBlockAimoffset;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsLocallyControlled;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float Speed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float Direction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	FVector Velocity;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	FRotator ActorRotation;
 
 	// Animation State Checks
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bWeaponEquipped;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsStanding;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsCrouching;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsProning;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsResting;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsAiming;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsReady;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	AWeapon* CurrentWeapon;
 
 private:
@@ -74,9 +92,4 @@ public:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
-private:
-
-	UPROPERTY()
-	APawn* Owner;
 };

@@ -28,12 +28,19 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	RootComponent = WeaponMesh;
 
-	SightAttachment = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SightAttachment"));
-	SightAttachment->bReceivesDecals = false;
-	SightAttachment->SetCollisionObjectType(ECC_WorldDynamic);
-	SightAttachment->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SightAttachment->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SightAttachment->SetupAttachment(WeaponMesh, FName("SightsSocket"));
+	PrimarySight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PrimarySight"));
+	PrimarySight->bReceivesDecals = false;
+	PrimarySight->SetCollisionObjectType(ECC_WorldDynamic);
+	PrimarySight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PrimarySight->SetCollisionResponseToAllChannels(ECR_Ignore);
+	PrimarySight->SetupAttachment(WeaponMesh, FName("PrimarySightSocket"));
+
+	SecondarySight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SecondarySight"));
+	SecondarySight->bReceivesDecals = false;
+	SecondarySight->SetCollisionObjectType(ECC_WorldDynamic);
+	SecondarySight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SecondarySight->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SecondarySight->SetupAttachment(WeaponMesh, FName("SecondarySightSocket"));
 
 	bLoopedMuzzleFX = false;
 	bLoopedFireAnim = false;
@@ -45,6 +52,8 @@ AWeapon::AWeapon()
 	CurrentState = EWeaponState::Idle;
 	AttachSocket = FName("GripPoint");
 	MuzzleAttachPoint = FName("Muzzle");
+	CurrentSight = PrimarySight;
+	DistanceToSight = 25.f;
 
 	CurrentAmmoInWeapon = 0;
 	BurstCounter = 0;
@@ -72,6 +81,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME_CONDITION(AWeapon, BurstCounter, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, bPendingReload, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, Item, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(AWeapon, CurrentSight, COND_OwnerOnly);
 }
 
 
@@ -252,6 +262,15 @@ void AWeapon::StartReload(bool bFromReplication)
 	if (!bFromReplication && !HasAuthority())
 	{
 		ServerStartReload();
+	}
+
+	if (CurrentSight == PrimarySight)
+	{
+		CurrentSight = SecondarySight;
+	}
+	else
+	{
+		CurrentSight = PrimarySight;
 	}
 
 	if (bFromReplication || CanReload())
@@ -836,8 +855,8 @@ void AWeapon::AttachMeshToPawn()
 		// Remove and hide both first and third person meshes
 		DetachMeshFromPawn();
 
-		USkeletalMeshComponent* PawnMesh = PawnOwner->Get1PArmMesh();
-		AttachToComponent(PawnOwner->Get1PArmMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocket);
+		USkeletalMeshComponent* PawnMesh = PawnOwner->Get1PMesh();
+		AttachToComponent(PawnOwner->Get1PMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocket);
 	}
 }
 
