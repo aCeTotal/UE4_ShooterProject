@@ -349,6 +349,9 @@ protected:
 	class AWeapon* EquippedWeapon;
 
 	UFUNCTION()
+	void CycleWeaponSights();
+
+	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
 	void StartFire();

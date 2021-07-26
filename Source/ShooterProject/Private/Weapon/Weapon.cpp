@@ -264,15 +264,6 @@ void AWeapon::StartReload(bool bFromReplication)
 		ServerStartReload();
 	}
 
-	if (CurrentSight == PrimarySight)
-	{
-		CurrentSight = SecondarySight;
-	}
-	else
-	{
-		CurrentSight = PrimarySight;
-	}
-
 	if (bFromReplication || CanReload())
 	{
 		bPendingReload = true;

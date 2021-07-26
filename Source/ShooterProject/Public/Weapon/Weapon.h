@@ -225,18 +225,21 @@ public:
 	USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class UStaticMeshComponent* PrimarySight;
+	UStaticMeshComponent* PrimarySight;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	class UStaticMeshComponent* SecondarySight;
+	UStaticMeshComponent* SecondarySight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Components")
-	class UStaticMeshComponent* CurrentSight;
+	UStaticMeshComponent* CurrentSight;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	float DistanceToSight;
 
 protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sights")
+	TArray<UStaticMeshComponent*> Sights;
 
 	//Adjust to handle frame rate affecting actual timer interval
 	UPROPERTY(Transient)

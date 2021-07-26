@@ -31,17 +31,23 @@ public:
 	FTransform SightTransform;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	FTransform FinalHandTransform;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float AimAlpha;
 
 	bool bInterpAiming;
+	bool bInterpRelativeHand;
 
 protected:
 
 	//Functions used to get the weapon sight in front of the camera
 	void SetSightTransform();
 	void SetRelativeHandTransform();
+	void SetFinalHandTransform();
 
 	void InterpAiming();
+	void InterpRelativeHand();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsInAir;
@@ -92,6 +98,8 @@ protected:
 public:
 
 	void SetAiming(bool bNewAiming);
+
+	void CycledWeaponSight();
 
 private:
 

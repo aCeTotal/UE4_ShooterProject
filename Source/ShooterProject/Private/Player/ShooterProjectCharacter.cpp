@@ -450,6 +450,8 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShooterProjectCharacter::StartAiming);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShooterProjectCharacter::StopAiming);
 
+	PlayerInputComponent->BindAction("AlternateFire", IE_Pressed, this, &AShooterProjectCharacter::CycleWeaponSights);
+
 	//PlayerInputComponent->BindAction("RestWeapon", IE_Pressed, this, &AShooterProjectCharacter::StartResting);
 	//PlayerInputComponent->BindAction("RestWeapon", IE_Released, this, &AShooterProjectCharacter::StopResting);
 	
@@ -919,6 +921,24 @@ float AShooterProjectCharacter::ModifyHealth(const float Delta)
 void AShooterProjectCharacter::OnRep_Health(float OldHealth)
 {
 	OnHealthModified(Health - OldHealth);
+}
+
+
+void AShooterProjectCharacter::CycleWeaponSights()
+{
+	if (EquippedWeapon->CurrentSight == EquippedWeapon->PrimarySight)
+	{
+		EquippedWeapon->CurrentSight = EquippedWeapon->SecondarySight;
+	}
+	else
+	{
+		EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
+	}
+
+	if (PlayerAnimInstance)
+	{
+		PlayerAnimInstance->CycledWeaponSight();
+	}
 }
 
 void AShooterProjectCharacter::OnRep_EquippedWeapon()

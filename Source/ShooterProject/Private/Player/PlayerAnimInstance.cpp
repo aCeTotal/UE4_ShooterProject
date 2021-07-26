@@ -13,6 +13,7 @@ UPlayerAnimInstance::UPlayerAnimInstance()
 {
 	bIsInAir = false;
 	bInterpAiming = false;
+	bInterpRelativeHand = false;
 	bIsAiming = false;
 	bBlockAimoffset = false;
 	Speed = 0.f;
@@ -80,6 +81,11 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		InterpAiming();
 	}
+
+	if (bInterpRelativeHand)
+	{
+		InterpRelativeHand();
+	}
 }
 
 
@@ -116,6 +122,17 @@ void UPlayerAnimInstance::SetRelativeHandTransform()
 	}
 }
 
+void UPlayerAnimInstance::SetFinalHandTransform()
+{
+	if (Character && CurrentWeapon && CurrentWeapon->GetCurrentSight())
+	{
+		FTransform HandTransform = Character->Get1PMesh()->GetSocketTransform(FName("hand_r"));
+		FTransform SightSocketTransform = CurrentWeapon->GetCurrentSight()->GetSocketTransform(FName("S_Aim"));
+
+		FinalHandTransform = UKismetMathLibrary::MakeRelativeTransform(SightSocketTransform, HandTransform);
+	}
+}
+
 void UPlayerAnimInstance::InterpAiming()
 {
 	AimAlpha = UKismetMathLibrary::FInterpTo(AimAlpha, static_cast<float>(bIsAiming), GetWorld()->GetDeltaSeconds(), 8.0f);
@@ -127,6 +144,16 @@ void UPlayerAnimInstance::InterpAiming()
 	}
 }
 
+void UPlayerAnimInstance::InterpRelativeHand()
+{
+	RelativeHandTransform = UKismetMathLibrary::TInterpTo(RelativeHandTransform, FinalHandTransform, GetWorld()->GetDeltaSeconds(), 8.0f);
+
+	if (RelativeHandTransform.Equals(FinalHandTransform))
+	{
+		bInterpRelativeHand = false;
+	}
+}
+
 void UPlayerAnimInstance::SetAiming(bool bNewAiming)
 {
 	if (bIsAiming != bNewAiming)
@@ -134,6 +161,12 @@ void UPlayerAnimInstance::SetAiming(bool bNewAiming)
 		bIsAiming = bNewAiming;
 		bInterpAiming = true;
 	}	
+}
+
+void UPlayerAnimInstance::CycledWeaponSight()
+{
+	SetFinalHandTransform();
+	bInterpRelativeHand = true;
 }
 
 //Calculate direction
