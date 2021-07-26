@@ -341,7 +341,15 @@ public:
 
 
 protected:
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentSight)
+	UStaticMeshComponent* CurrentSight;
 
+	UFUNCTION()
+	void OnRep_CurrentSight();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_CurrentSight(UStaticMeshComponent* NewSight);
+	
 	UPROPERTY()
 	UPlayerAnimInstance* PlayerAnimInstance;
 
@@ -454,8 +462,11 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetAiming(const bool bNewAiming);
 
-	UPROPERTY(Transient, Replicated)
+	UPROPERTY(Transient, ReplicatedUsing=OnRep_IsAiming)
 	bool bIsAiming;
+
+	UFUNCTION()
+	void OnRep_IsAiming();
 
 public:
 	/** Returns CameraBoom subobject **/

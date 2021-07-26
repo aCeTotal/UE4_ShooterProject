@@ -39,7 +39,6 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 {
 	CurrentPawnState = EPawnState::Stand;
 	CurrentOffsetState = EWeaponOffsetState::Ready;
-
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -366,8 +365,8 @@ void AShooterProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentPawnState);
 	DOREPLIFETIME(AShooterProjectCharacter, CurrentOffsetState);
 	DOREPLIFETIME(AShooterProjectCharacter, ProneFix);
-
 	DOREPLIFETIME_CONDITION(AShooterProjectCharacter, bIsAiming, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AShooterProjectCharacter, CurrentSight, COND_SkipOwner);
 }
 
 
@@ -424,6 +423,14 @@ void AShooterProjectCharacter::SetAiming(const bool bNewAiming)
 	if (!HasAuthority())
 	{
 		ServerSetAiming(bNewAiming);
+	}
+}
+
+void AShooterProjectCharacter::OnRep_IsAiming()
+{
+	if (PlayerAnimInstance)
+	{
+		PlayerAnimInstance->SetAiming(bIsAiming);
 	}
 }
 
@@ -935,9 +942,16 @@ void AShooterProjectCharacter::CycleWeaponSights()
 		EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
 	}
 
+	CurrentSight = EquippedWeapon->GetCurrentSight();
+
 	if (PlayerAnimInstance)
 	{
 		PlayerAnimInstance->CycledWeaponSight();
+	}
+
+	if (!HasAuthority())
+	{
+		Server_CurrentSight(CurrentSight);
 	}
 }
 
@@ -972,6 +986,23 @@ void AShooterProjectCharacter::StartReload()
 		EquippedWeapon->StartReload();
 	}
 }
+
+void AShooterProjectCharacter::OnRep_CurrentSight()
+{
+	CycleWeaponSights();
+}
+
+void AShooterProjectCharacter::Server_CurrentSight_Implementation(UStaticMeshComponent* NewSight)
+{
+	EquippedWeapon->CurrentSight = NewSight;
+	OnRep_CurrentSight();
+}
+
+bool AShooterProjectCharacter::Server_CurrentSight_Validate(UStaticMeshComponent* NewSight)
+{
+	return true;
+}
+
 
 void AShooterProjectCharacter::BeginMeleeAttach()
 {

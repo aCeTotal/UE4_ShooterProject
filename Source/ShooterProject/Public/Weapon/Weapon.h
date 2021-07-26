@@ -236,12 +236,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	float DistanceToSight;
 
-	uint8 SightIndex;
-
 protected:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sights")
-	TArray<UStaticMeshComponent*> Sights;
 
 	//Adjust to handle frame rate affecting actual timer interval
 	UPROPERTY(Transient)

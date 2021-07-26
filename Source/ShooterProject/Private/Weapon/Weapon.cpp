@@ -54,7 +54,6 @@ AWeapon::AWeapon()
 	MuzzleAttachPoint = FName("Muzzle");
 	CurrentSight = PrimarySight;
 	DistanceToSight = 25.f;
-	SightIndex = 0;
 
 	CurrentAmmoInWeapon = 0;
 	BurstCounter = 0;
@@ -82,7 +81,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME_CONDITION(AWeapon, BurstCounter, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, bPendingReload, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AWeapon, Item, COND_InitialOnly);
-	DOREPLIFETIME_CONDITION(AWeapon, CurrentSight, COND_OwnerOnly);
 }
 
 
