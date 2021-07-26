@@ -236,6 +236,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	float DistanceToSight;
 
+	uint8 SightIndex;
+
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sights")

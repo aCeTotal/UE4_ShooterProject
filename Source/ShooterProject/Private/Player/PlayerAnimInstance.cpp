@@ -71,7 +71,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	//Call the Transform functions only when a weapon is equipped
-	if (Character && bWeaponEquipped)
+	if (!bInterpRelativeHand && bWeaponEquipped)
 	{
 		SetSightTransform();
 		SetRelativeHandTransform();

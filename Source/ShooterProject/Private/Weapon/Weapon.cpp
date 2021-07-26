@@ -54,6 +54,7 @@ AWeapon::AWeapon()
 	MuzzleAttachPoint = FName("Muzzle");
 	CurrentSight = PrimarySight;
 	DistanceToSight = 25.f;
+	SightIndex = 0;
 
 	CurrentAmmoInWeapon = 0;
 	BurstCounter = 0;

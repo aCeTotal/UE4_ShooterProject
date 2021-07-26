@@ -351,6 +351,9 @@ protected:
 	UFUNCTION()
 	void CycleWeaponSights();
 
+	UPROPERTY()
+	class UStaticMeshComponent* NextSight;
+
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
@@ -464,6 +467,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE class USkeletalMeshComponent* Get1PMesh() const { return ArmsMesh1P; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE class UStaticMeshComponent* GetNextSight() const { return NextSight; }
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };
