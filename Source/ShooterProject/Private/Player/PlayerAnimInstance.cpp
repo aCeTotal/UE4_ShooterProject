@@ -139,7 +139,6 @@ void UPlayerAnimInstance::InterpAiming()
 
 	if (AimAlpha >= 1.0f || AimAlpha <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ALPHA: %f"), AimAlpha);
 		bInterpAiming = false;
 	}
 }
