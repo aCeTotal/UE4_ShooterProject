@@ -75,6 +75,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		SetSightTransform();
 		SetRelativeHandTransform();
+		SetLeftHandTransform();
 	}
 
 	if (bInterpAiming)
@@ -130,6 +131,17 @@ void UPlayerAnimInstance::SetFinalHandTransform()
 		FTransform SightSocketTransform = CurrentWeapon->GetCurrentSight()->GetSocketTransform(FName("S_Aim"));
 
 		FinalHandTransform = UKismetMathLibrary::MakeRelativeTransform(SightSocketTransform, HandTransform);
+	}
+}
+
+void UPlayerAnimInstance::SetLeftHandTransform()
+{
+	if (Character && bWeaponEquipped)
+	{
+		FTransform WeaponGripPointTransform = CurrentWeapon->WeaponMesh->GetSocketTransform(FName("LeftHandGripPoint"));
+		FTransform RightHandTransform = Character->Get1PMesh()->GetSocketTransform(FName("hand_r"));
+
+		LeftHandIK = UKismetMathLibrary::MakeRelativeTransform(WeaponGripPointTransform, RightHandTransform);
 	}
 }
 

@@ -34,6 +34,9 @@ public:
 	FTransform FinalHandTransform;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	FTransform LeftHandIK;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float AimAlpha;
 
 	bool bInterpAiming;
@@ -45,6 +48,7 @@ protected:
 	void SetSightTransform();
 	void SetRelativeHandTransform();
 	void SetFinalHandTransform();
+	void SetLeftHandTransform();
 
 	void InterpAiming();
 	void InterpRelativeHand();
