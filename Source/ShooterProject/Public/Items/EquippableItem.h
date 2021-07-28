@@ -18,7 +18,7 @@ enum class EEquippableSlot : uint8
 	EIS_Feet UMETA(DisplayName = "Feet"),
 	EIS_Hands UMETA(DisplayName = "Hands"),
 	EIS_Backpack UMETA(DisplayName = "Backpack"),
-	EIS_PrimaryWeapon UMETA(DisplayName = "Primary Weapon"),
+	EIS_PrimaryWeapon UMETA(DisplayName = "4AW|SAW"),
 	EIS_SecondaryWeapon UMETA(DisplayName = "Secondary Weapon"), 
 	EIS_Throwable UMETA(DisplayName = "Throwable Item")
 };

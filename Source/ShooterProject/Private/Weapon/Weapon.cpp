@@ -194,7 +194,7 @@ void AWeapon::OnUnEquip()
 
 	if (bPendingReload)
 	{
-		StopWeaponAnimation(ReloadAnim);
+		Stop1PWeaponAnimation(Reload);
 		bPendingReload = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
@@ -203,7 +203,7 @@ void AWeapon::OnUnEquip()
 
 	if (bPendingEquip)
 	{
-		StopWeaponAnimation(EquipAnim);
+		Stop1PWeaponAnimation(Equip);
 		bPendingEquip = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
@@ -268,7 +268,7 @@ void AWeapon::StartReload(bool bFromReplication)
 		bPendingReload = true;
 		DetermineWeaponState();
 
-		float AnimDuration = PlayWeaponAnimation(ReloadAnim);
+		float AnimDuration = Play1PWeaponAnimation(Reload);
 		if (AnimDuration <= 0.0f)
 		{
 			AnimDuration = .5f;
@@ -294,7 +294,7 @@ void AWeapon::StopReload()
 	{
 		bPendingReload = false;
 		DetermineWeaponState();
-		StopWeaponAnimation(ReloadAnim);
+		Stop1PWeaponAnimation(Reload);
 	}
 }
 
@@ -528,8 +528,7 @@ void AWeapon::SimulateWeaponFire()
 
 	if (!bLoopedFireAnim || !bPlayingFireAnim)
 	{
-		FWeaponAnim AnimToPlay = FireAnim; //PawnOwner->IsAiming() || PawnOwner->IsLocallyControlled() ? FireAimingAnim : FireAnim;
-		PlayWeaponAnimation(FireAnim);
+		Play1PWeaponAnimation(Fire);
 		bPlayingFireAnim = true;
 	}
 
@@ -580,8 +579,8 @@ void AWeapon::StopSimulatingWeaponFire()
 
 	if (bLoopedFireAnim && bPlayingFireAnim)
 	{
-		StopWeaponAnimation(FireAimingAnim);
-		StopWeaponAnimation(FireAnim);
+		Stop1PWeaponAnimation(Fire);
+		Stop1PWeaponAnimation(Fire);
 		bPlayingFireAnim = false;
 	}
 
@@ -869,30 +868,31 @@ UAudioComponent* AWeapon::PlayWeaponSound(USoundCue* Sound)
 }
 
 
-float AWeapon::PlayWeaponAnimation(const FWeaponAnim& Animation)
+float AWeapon::Play1PWeaponAnimation(UAnimMontage* Animation)
 {
 	float Duration = 0.0f;
+	
 	if (PawnOwner)
-	{
-		UAnimMontage* UseAnim = PawnOwner->IsLocallyControlled() ? Animation.Pawn1P : Animation.Pawn3P;
-		if (UseAnim)
+	{	
+		UAnimInstance* AnimInstance = PawnOwner->Get1PMesh()->GetAnimInstance();
+		if (AnimInstance)
 		{
-			Duration = PawnOwner->PlayAnimMontage(UseAnim);
+			Duration = AnimInstance->Montage_Play(Animation);
 		}
 	}
-
+	
 	return Duration;
 }
 
 
-void AWeapon::StopWeaponAnimation(const FWeaponAnim& Animation)
+void AWeapon::Stop1PWeaponAnimation(UAnimMontage* Animation)
 {
 	if (PawnOwner)
 	{
-		UAnimMontage* UseAnim = PawnOwner->IsLocallyControlled() ? Animation.Pawn1P : Animation.Pawn3P;
-		if (UseAnim)
+		UAnimInstance* AnimInstance = PawnOwner->Get1PMesh()->GetAnimInstance();
+		if (Animation && AnimInstance)
 		{
-			PawnOwner->StopAnimMontage(UseAnim);
+			AnimInstance->Montage_Stop(1.f, Animation);
 		}
 	}
 }

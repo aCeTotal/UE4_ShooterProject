@@ -303,6 +303,9 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Animation and sound
 	
+	UPROPERTY(EditDefaultsOnly, Category = Animation)
+	UAnimMontage* ReloadTestAnim;
+	
 	//Single fire sound (bLoopedFIreSound not set)
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
 	USoundCue* FireSound;
@@ -324,24 +327,24 @@ protected:
 	USoundCue* ReloadSound;
 
 	//Reload animations
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	FWeaponAnim ReloadAnim;
+	//UPROPERTY(EditDefaultsOnly, Category = Animation)
+	//FWeaponAnim ReloadAnim;
 
 	//Equip sound
 	UPROPERTY(EditDefaultsOnly, Category = Sound)
 	USoundCue* EquipSound;
 
 	//Equip animations
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	FWeaponAnim EquipAnim;
+	//UPROPERTY(EditDefaultsOnly, Category = Animation)
+	//FWeaponAnim EquipAnim;
 
 	//Fire animations
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	FWeaponAnim FireAnim;
+	//UPROPERTY(EditDefaultsOnly, Category = Animation)
+	//FWeaponAnim FireAnim;
 
 	//Fire animations
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	FWeaponAnim FireAimingAnim;
+	//UPROPERTY(EditDefaultsOnly, Category = Animation)
+	//FWeaponAnim FireAimingAnim;
 
 
 
@@ -505,7 +508,23 @@ protected:
 	//detaches weapon mesh from pawn
 	void DetachMeshFromPawn();
 	
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// ANIMATIONS
 
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* Reload;
+
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* Fire;
+
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* FireAiming;
+
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* Equip;
+
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* UnEquip;
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Weapon usage helpers
@@ -513,11 +532,11 @@ protected:
 	//Play weapon sounds
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound);
 
-	//Play Weapon animations
-	float PlayWeaponAnimation(const FWeaponAnim& Animation);
+	//Play Weapon animations on arms
+	float Play1PWeaponAnimation(UAnimMontage* Animation);
 
-	//Stop playing weapon animation
-	void StopWeaponAnimation(const FWeaponAnim& Animation);
+	//Stop playing weapon animation on arms
+	void Stop1PWeaponAnimation(UAnimMontage* Animation);
 
 	//Get the aim of the camera
 	FVector GetCameraAim() const;

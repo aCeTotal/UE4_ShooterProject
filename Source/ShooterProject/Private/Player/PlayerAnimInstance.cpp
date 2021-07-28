@@ -16,8 +16,8 @@ UPlayerAnimInstance::UPlayerAnimInstance()
 	bInterpRelativeHand = false;
 	bIsAiming = false;
 	bBlockAimoffset = false;
-	Speed = 0.f;
-	Direction = 0.f;
+	Speed = 0.0f;
+	Direction = 0.0f;
 	AimAlpha = 0.0f;
 }
 
@@ -78,12 +78,12 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		SetLeftHandTransform();
 	}
 
-	if (bInterpAiming)
+	if (bInterpAiming && bWeaponEquipped)
 	{
 		InterpAiming();
 	}
 
-	if (bInterpRelativeHand)
+	if (bInterpRelativeHand && bWeaponEquipped)
 	{
 		InterpRelativeHand();
 	}
@@ -97,17 +97,9 @@ void UPlayerAnimInstance::SetSightTransform()
 		FTransform CameraTransform = Character->Get1PCamera()->GetComponentTransform();
 		FTransform MeshTransform = Character->Get1PMesh()->GetComponentTransform();
 
-		FTransform Relative = UKismetMathLibrary::MakeRelativeTransform(CameraTransform, MeshTransform);
+		SightTransform = UKismetMathLibrary::MakeRelativeTransform(CameraTransform, MeshTransform);
 
-		FVector NewSightVector = Relative.GetLocation();
-
-		FVector ForwardVector = Relative.GetRotation().GetForwardVector();
-		ForwardVector *= CurrentWeapon->DistanceToSight;
-
-		NewSightVector += ForwardVector;
-
-		SightTransform.SetLocation(NewSightVector);
-		SightTransform.SetRotation(Relative.Rotator().Quaternion());
+		SightTransform.SetLocation(SightTransform.GetLocation() + SightTransform.GetRotation().Vector() * CurrentWeapon->DistanceToSight);
 	}
 }
 

@@ -916,6 +916,7 @@ void AShooterProjectCharacter::StopProning()
 
 }
 
+
 float AShooterProjectCharacter::ModifyHealth(const float Delta)
 {
 	const float OldHealth = Health;
@@ -933,25 +934,28 @@ void AShooterProjectCharacter::OnRep_Health(float OldHealth)
 
 void AShooterProjectCharacter::CycleWeaponSights()
 {
-	if (EquippedWeapon->CurrentSight == EquippedWeapon->PrimarySight)
+	if (EquippedWeapon)
 	{
-		EquippedWeapon->CurrentSight = EquippedWeapon->SecondarySight;
-	}
-	else
-	{
-		EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
-	}
+		if (EquippedWeapon->CurrentSight == EquippedWeapon->PrimarySight)
+		{
+			EquippedWeapon->CurrentSight = EquippedWeapon->SecondarySight;
+		}
+		else
+		{
+			EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
+		}
 
-	CurrentSight = EquippedWeapon->GetCurrentSight();
+		CurrentSight = EquippedWeapon->GetCurrentSight();
 
-	if (PlayerAnimInstance)
-	{
-		PlayerAnimInstance->CycledWeaponSight();
-	}
+		if (PlayerAnimInstance)
+		{
+			PlayerAnimInstance->CycledWeaponSight();
+		}
 
-	if (!HasAuthority())
-	{
-		Server_CurrentSight(CurrentSight);
+		if (!HasAuthority())
+		{
+			Server_CurrentSight(CurrentSight);
+		}
 	}
 }
 
@@ -985,6 +989,21 @@ void AShooterProjectCharacter::StartReload()
 	{
 		EquippedWeapon->StartReload();
 	}
+}
+
+float AShooterProjectCharacter::Play1PMontage(UAnimMontage* Montage)
+{
+	float Duration = 0.0f;
+	if (IsLocallyControlled())
+	{
+		UAnimInstance* AnimInstance = ArmsMesh1P->GetAnimInstance();
+		if (Montage && AnimInstance)
+		{
+			Duration = AnimInstance->Montage_Play(Montage);
+		}
+	}
+
+	return Duration;
 }
 
 void AShooterProjectCharacter::OnRep_CurrentSight()

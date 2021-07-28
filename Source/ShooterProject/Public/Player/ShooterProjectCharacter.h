@@ -254,6 +254,8 @@ protected:
 	FTimerHandle ProneToCrouchTimerHandle;
 	FTimerHandle ProneToStandTimerHandle;
 
+	FTimerHandle AnimationTimerHandle;
+
 public:
 	
 	//True if we're interactive with an item that has an interaction time (For example an lamp that takes 2 seconds to turn on)
@@ -341,6 +343,10 @@ public:
 
 
 protected:
+
+	//Play Weapon animations
+	float Play1PMontage(UAnimMontage* Montage);
+	
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentSight)
 	UStaticMeshComponent* CurrentSight;
 
