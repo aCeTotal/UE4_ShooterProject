@@ -7,6 +7,7 @@
 #include "Player/ShooterProjectCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Curves/CurveVector.h"
 #include "Engine.h"
 
 UPlayerAnimInstance::UPlayerAnimInstance()
@@ -80,13 +81,21 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	if (bInterpAiming && bWeaponEquipped)
 	{
-		InterpAiming();
+		InterpAiming(DeltaSeconds);
 	}
 
 	if (bInterpRelativeHand && bWeaponEquipped)
 	{
-		InterpRelativeHand();
+		InterpRelativeHand(DeltaSeconds);
 	}
+
+	Velocity.Z = 0.0f;
+	if (Velocity.Size() > 0.0f)
+	{
+		//MoveVectorCurve(DeltaSeconds);
+	}
+
+	MoveVectorCurve(DeltaSeconds);
 }
 
 
@@ -137,9 +146,9 @@ void UPlayerAnimInstance::SetLeftHandTransform()
 	}
 }
 
-void UPlayerAnimInstance::InterpAiming()
+void UPlayerAnimInstance::InterpAiming(float DeltaSeconds)
 {
-	AimAlpha = UKismetMathLibrary::FInterpTo(AimAlpha, static_cast<float>(bIsAiming), GetWorld()->GetDeltaSeconds(), 8.0f);
+	AimAlpha = UKismetMathLibrary::FInterpTo(AimAlpha, static_cast<float>(bIsAiming), DeltaSeconds, 8.0f);
 
 	if (AimAlpha >= 1.0f || AimAlpha <= 0.0f)
 	{
@@ -147,13 +156,23 @@ void UPlayerAnimInstance::InterpAiming()
 	}
 }
 
-void UPlayerAnimInstance::InterpRelativeHand()
+void UPlayerAnimInstance::InterpRelativeHand(float DeltaSeconds)
 {
-	RelativeHandTransform = UKismetMathLibrary::TInterpTo(RelativeHandTransform, FinalHandTransform, GetWorld()->GetDeltaSeconds(), 8.0f);
+	RelativeHandTransform = UKismetMathLibrary::TInterpTo(RelativeHandTransform, FinalHandTransform, DeltaSeconds, 8.0f);
 
 	if (RelativeHandTransform.Equals(FinalHandTransform))
 	{
 		bInterpRelativeHand = false;
+	}
+}
+
+void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
+{
+	if (VectorCurve)
+	{
+		FVector NewVector = VectorCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+		SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+		UE_LOG(LogTemp, Warning, TEXT("Z Value: %f"), SwayLocation.Z);
 	}
 }
 

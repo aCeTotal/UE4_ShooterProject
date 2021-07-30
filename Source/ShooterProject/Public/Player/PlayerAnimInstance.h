@@ -10,6 +10,7 @@
 
 
 class AShooterProjectCharacter;
+class UCurveVector;
 
 /**
  * 
@@ -39,6 +40,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float AimAlpha;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UCurveVector* VectorCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	FVector SwayLocation;
+
+	
 	bool bInterpAiming;
 	bool bInterpRelativeHand;
 
@@ -50,8 +58,10 @@ protected:
 	void SetFinalHandTransform();
 	void SetLeftHandTransform();
 
-	void InterpAiming();
-	void InterpRelativeHand();
+	void InterpAiming(float DeltaSeconds);
+	void InterpRelativeHand(float DeltaSeconds);
+
+	void MoveVectorCurve(float DeltaSeconds);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsInAir;
