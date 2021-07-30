@@ -48,33 +48,6 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRespawn();
 
-	/**Applies recoil to the Weapon
-	* RecoilAmount the amount to recoil by. X is the yaw, Y is the pitch.
-	* RecoilSpeed the speed to bump the Weapon up per second.
-	* RecoilResetSpeed, the speed the weapon will return to center at per second after the recoil is finished
-	* Shake an optional to play with the recoil
-	*/
-	void ApplyRecoil(const FVector2D& RecoilAmount, const float RecoilSpeed, const float RecoilResetSpeed, TSubclassOf<class UMatineeCameraShake> Shake = nullptr);
-
-	//The amount of recoil to apply. We store this in a variable as we smoothly apply the recoil over several frames
-	UPROPERTY(VisibleAnywhere, Category = "Recoil")
-	FVector2D RecoilBumpAmount;
-
-	UPROPERTY(VisibleAnywhere, Category = "Recoil")
-	FVector2D RecoilResetAmount;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-	float CurrentRecoilSpeed;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-	float CurrentRecoilResetSpeed;
-
-	UPROPERTY(VisibleAnywhere, Category = "Recoil")
-	float LastRecoilTime;
-
-	void Turn(float Rate);
-	void LookUp(float Rate);
-
 	void StartReload();
 	
 };
