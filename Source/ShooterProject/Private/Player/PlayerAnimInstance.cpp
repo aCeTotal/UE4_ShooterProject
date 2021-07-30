@@ -90,12 +90,11 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	Velocity.Z = 0.0f;
-	if (Velocity.Size() > 0.0f)
+	if (bWeaponEquipped)
 	{
-		//MoveVectorCurve(DeltaSeconds);
+		MoveVectorCurve(DeltaSeconds);
 	}
 
-	MoveVectorCurve(DeltaSeconds);
 }
 
 
@@ -168,11 +167,31 @@ void UPlayerAnimInstance::InterpRelativeHand(float DeltaSeconds)
 
 void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 {
-	if (VectorCurve)
+	if (Speed == 0.0f)
 	{
-		FVector NewVector = VectorCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
-		SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
-		UE_LOG(LogTemp, Warning, TEXT("Z Value: %f"), SwayLocation.Z);
+		if (IdleCurve)
+		{
+			FVector NewVector = IdleCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+			SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+		}
+	}
+	
+	if (Speed > 0.0f && bIsCrouching)
+	{
+		if (SlowWalkCurve)
+		{
+			FVector NewVector = SlowWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+			SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+		}
+	}
+
+	if (Speed > 0.0f && !bIsCrouching)
+	{
+		if (FastWalkCurve)
+		{
+			FVector NewVector = FastWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+			SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+		}
 	}
 }
 

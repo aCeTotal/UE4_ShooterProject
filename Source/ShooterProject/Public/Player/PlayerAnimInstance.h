@@ -41,7 +41,13 @@ public:
 	float AimAlpha;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UCurveVector* VectorCurve;
+	UCurveVector* IdleCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UCurveVector* SlowWalkCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UCurveVector* FastWalkCurve;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	FVector SwayLocation;
