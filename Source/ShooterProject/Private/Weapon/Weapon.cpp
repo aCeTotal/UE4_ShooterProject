@@ -28,19 +28,19 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	RootComponent = WeaponMesh;
 
+	WeaponHipLocation = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponHipLocation"));
+	WeaponHipLocation->bReceivesDecals = false;
+	WeaponHipLocation->SetCollisionObjectType(ECC_WorldDynamic);
+	WeaponHipLocation->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponHipLocation->SetCollisionResponseToAllChannels(ECR_Ignore);
+	WeaponHipLocation->SetupAttachment(WeaponMesh, FName("WeaponHipLocation"));
+
 	PrimarySight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PrimarySight"));
 	PrimarySight->bReceivesDecals = false;
 	PrimarySight->SetCollisionObjectType(ECC_WorldDynamic);
 	PrimarySight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	PrimarySight->SetCollisionResponseToAllChannels(ECR_Ignore);
 	PrimarySight->SetupAttachment(WeaponMesh, FName("PrimarySightSocket"));
-
-	SecondarySight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SecondarySight"));
-	SecondarySight->bReceivesDecals = false;
-	SecondarySight->SetCollisionObjectType(ECC_WorldDynamic);
-	SecondarySight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SecondarySight->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SecondarySight->SetupAttachment(WeaponMesh, FName("SecondarySightSocket"));
 
 	bLoopedMuzzleFX = false;
 	bLoopedFireAnim = false;
@@ -52,7 +52,7 @@ AWeapon::AWeapon()
 	CurrentState = EWeaponState::Idle;
 	AttachSocket = FName("GripPoint");
 	MuzzleAttachPoint = FName("Muzzle");
-	CurrentSight = PrimarySight;
+	CurrentSight = WeaponHipLocation;
 	DistanceToSight = 25.f;
 
 	CurrentAmmoInWeapon = 0;
@@ -96,11 +96,13 @@ void AWeapon::PostInitializeComponents()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	CurrentSight = WeaponHipLocation;
 
 	// Server sets PawnOwner at Spawn/GameStart
 	if (HasAuthority())
 	{
 		PawnOwner = Cast<AShooterProjectCharacter>(GetOwner());
+		CurrentSight = WeaponHipLocation;
 	}
 }
 
@@ -648,11 +650,11 @@ void AWeapon::FireShot()
 	{
 		if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(PawnOwner->GetController()))
 		{
-			//if (RecoilCurve)
-			//{
-			//	const FVector2D RecoilAmount(RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).X, RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).Y);
-			//	PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
-			//}
+			if (RecoilCurve)
+			{
+				const FVector2D RecoilAmount(RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).X, RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).Y);
+				PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
+			}
 
 			FVector SocketLoc;
 			FRotator SocketRot;

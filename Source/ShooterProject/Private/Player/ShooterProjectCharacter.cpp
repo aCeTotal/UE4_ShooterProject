@@ -398,12 +398,26 @@ void AShooterProjectCharacter::StartAiming()
 	if (CanAim())
 	{
 		SetAiming(true);
+		EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
+
+		if (PlayerAnimInstance)
+		{
+			PlayerAnimInstance->CycledWeaponSight();
+		}
 	}
 }
 
 void AShooterProjectCharacter::StopAiming()
 {
-	SetAiming(false);
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->CurrentSight = EquippedWeapon->WeaponHipLocation;
+
+		if (PlayerAnimInstance)
+		{
+			PlayerAnimInstance->CycledWeaponSight();
+		}
+	}
 }
 
 void AShooterProjectCharacter::SetAiming(const bool bNewAiming)
@@ -483,8 +497,6 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Lookup", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &AShooterProjectCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AShooterProjectCharacter::LookUpAtRate);
 
@@ -936,29 +948,6 @@ void AShooterProjectCharacter::OnRep_Health(float OldHealth)
 
 void AShooterProjectCharacter::CycleWeaponSights()
 {
-	if (EquippedWeapon)
-	{
-		if (EquippedWeapon->CurrentSight == EquippedWeapon->PrimarySight)
-		{
-			EquippedWeapon->CurrentSight = EquippedWeapon->SecondarySight;
-		}
-		else
-		{
-			EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
-		}
-
-		CurrentSight = EquippedWeapon->GetCurrentSight();
-
-		if (PlayerAnimInstance)
-		{
-			PlayerAnimInstance->CycledWeaponSight();
-		}
-
-		if (!HasAuthority())
-		{
-			Server_CurrentSight(CurrentSight);
-		}
-	}
 }
 
 void AShooterProjectCharacter::OnRep_EquippedWeapon()

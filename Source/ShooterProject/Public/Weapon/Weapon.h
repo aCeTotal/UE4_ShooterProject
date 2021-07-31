@@ -228,7 +228,7 @@ public:
 	UStaticMeshComponent* PrimarySight;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	UStaticMeshComponent* SecondarySight;
+	UStaticMeshComponent* WeaponHipLocation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Components")
 	UStaticMeshComponent* CurrentSight;
@@ -549,4 +549,9 @@ public:
 	/** Returns FollowCamera subobject **/
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE class UStaticMeshComponent* GetCurrentSight() const { return CurrentSight; }
+
+	/** Returns FollowCamera subobject **/
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE class UStaticMeshComponent* GetHipLocation() const { return WeaponHipLocation; }
+	
 };

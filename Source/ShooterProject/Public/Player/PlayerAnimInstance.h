@@ -46,7 +46,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UCurveVector* SlowWalkCurve;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UCurveVector* FastWalkCurve;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
@@ -74,8 +74,7 @@ protected:
 	void InterpRelativeHand(float DeltaSeconds);
 
 	void MoveVectorCurve(float DeltaSeconds);
-
-	void RotateWithRotation(float DeltaSeconds);
+	void SwayRotationOffset(float DeltaSeconds);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsInAir;
@@ -137,8 +136,6 @@ public:
 	UPlayerAnimInstance();
 
 	virtual void NativeInitializeAnimation() override;
-
-	virtual void NativeBeginPlay() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 };

@@ -19,7 +19,7 @@ UPlayerAnimInstance::UPlayerAnimInstance()
 	bBlockAimoffset = false;
 	Speed = 0.0f;
 	Direction = 0.0f;
-	AimAlpha = 0.0f;
+	AimAlpha = 1.0f;
 }
 
 
@@ -30,16 +30,10 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 	// Cache pawn
 	Character = Cast<AShooterProjectCharacter>(TryGetPawnOwner());
 
-	if (Character)
+	if (bWeaponEquipped)
 	{
 		OldRotation = Character->GetControlRotation();
 	}
-	
-}
-
-void UPlayerAnimInstance::NativeBeginPlay()
-{
-	Super::NativeBeginPlay();
 }
 
 
@@ -56,7 +50,8 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (Character->IsA(AShooterProjectCharacter::StaticClass()))
 	{
 		if (Character)
-		{		
+		{
+			
 			bWeaponEquipped = Character->IsHoldingWeapon();
 			bIsInAir = Character->GetMovementComponent()->IsFalling();
 			bIsLocallyControlled = Character->IsLocallyControlled();
@@ -100,11 +95,12 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		InterpRelativeHand(DeltaSeconds);
 	}
 
-	if (bWeaponEquipped && bIsLocallyControlled)
+	if (bWeaponEquipped)
 	{
-		RotateWithRotation(DeltaSeconds);
 		MoveVectorCurve(DeltaSeconds);
+		SwayRotationOffset(DeltaSeconds);
 	}
+
 }
 
 
@@ -133,7 +129,6 @@ void UPlayerAnimInstance::SetRelativeHandTransform()
 	}
 }
 
-
 void UPlayerAnimInstance::SetFinalHandTransform()
 {
 	if (Character && CurrentWeapon && CurrentWeapon->GetCurrentSight())
@@ -144,7 +139,6 @@ void UPlayerAnimInstance::SetFinalHandTransform()
 		FinalHandTransform = UKismetMathLibrary::MakeRelativeTransform(SightSocketTransform, HandTransform);
 	}
 }
-
 
 void UPlayerAnimInstance::SetLeftHandTransform()
 {
@@ -157,7 +151,6 @@ void UPlayerAnimInstance::SetLeftHandTransform()
 	}
 }
 
-
 void UPlayerAnimInstance::InterpAiming(float DeltaSeconds)
 {
 	AimAlpha = UKismetMathLibrary::FInterpTo(AimAlpha, static_cast<float>(bIsAiming), DeltaSeconds, 8.0f);
@@ -167,7 +160,6 @@ void UPlayerAnimInstance::InterpAiming(float DeltaSeconds)
 		bInterpAiming = false;
 	}
 }
-
 
 void UPlayerAnimInstance::InterpRelativeHand(float DeltaSeconds)
 {
@@ -179,10 +171,9 @@ void UPlayerAnimInstance::InterpRelativeHand(float DeltaSeconds)
 	}
 }
 
-
 void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 {
-	if (Speed == 0.0f && !bIsInAir)
+	if (Speed == 0.0f)
 	{
 		if (IdleCurve)
 		{
@@ -191,7 +182,7 @@ void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 		}
 	}
 	
-	if (Speed > 0.0f && bIsCrouching && !bIsInAir)
+	if (Speed > 0.0f && bIsCrouching)
 	{
 		if (SlowWalkCurve)
 		{
@@ -200,7 +191,7 @@ void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 		}
 	}
 
-	if (Speed > 0.0f && !bIsCrouching && !bIsInAir)
+	if (Speed > 0.0f && !bIsCrouching)
 	{
 		if (FastWalkCurve)
 		{
@@ -210,18 +201,17 @@ void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 	}
 }
 
-
-void UPlayerAnimInstance::RotateWithRotation(float DeltaSeconds)
+void UPlayerAnimInstance::SwayRotationOffset(float DeltaSeconds)
 {
 	FRotator CurrentRotation = Character->GetControlRotation();
-	TurnRotation = UKismetMathLibrary::RInterpTo(TurnRotation, CurrentRotation - OldRotation, DeltaSeconds, 7.0f);
-	TurnRotation.Roll = TurnRotation.Pitch * 2.0f;
+	TurnRotation = UKismetMathLibrary::RInterpTo(TurnRotation, CurrentRotation - OldRotation, DeltaSeconds, 8.0f);
+	TurnRotation.Roll = TurnRotation.Pitch * 1.5f;
+
 	TurnRotation.Yaw = FMath::Clamp(TurnRotation.Yaw, -8.0f, 8.0f);
 	TurnRotation.Roll = FMath::Clamp(TurnRotation.Roll, -5.0f, 5.0f);
 
 	OldRotation = CurrentRotation;
 }
-
 
 void UPlayerAnimInstance::SetAiming(bool bNewAiming)
 {
@@ -229,16 +219,14 @@ void UPlayerAnimInstance::SetAiming(bool bNewAiming)
 	{
 		bIsAiming = bNewAiming;
 		bInterpAiming = true;
-	}	
+	}
 }
-
 
 void UPlayerAnimInstance::CycledWeaponSight()
 {
 	SetFinalHandTransform();
 	bInterpRelativeHand = true;
 }
-
 
 //Calculate direction
 float UPlayerAnimInstance::CalculateDirection(const FVector& PlayerVelocity, const FRotator& PlayerRotation) const
