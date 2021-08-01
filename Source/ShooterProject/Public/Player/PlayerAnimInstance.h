@@ -56,6 +56,9 @@ public:
 	FRotator TurnRotation;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	FVector TurnLocation;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	FRotator OldRotation;
 
 	

@@ -204,11 +204,14 @@ void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 void UPlayerAnimInstance::SwayRotationOffset(float DeltaSeconds)
 {
 	FRotator CurrentRotation = Character->GetControlRotation();
-	TurnRotation = UKismetMathLibrary::RInterpTo(TurnRotation, CurrentRotation - OldRotation, DeltaSeconds, 8.0f);
+	TurnRotation = UKismetMathLibrary::RInterpTo(TurnRotation, CurrentRotation - OldRotation, DeltaSeconds, 6.0f);
 	TurnRotation.Roll = TurnRotation.Pitch * 1.5f;
 
 	TurnRotation.Yaw = FMath::Clamp(TurnRotation.Yaw, -8.0f, 8.0f);
 	TurnRotation.Roll = FMath::Clamp(TurnRotation.Roll, -5.0f, 5.0f);
+
+	TurnLocation.X = TurnRotation.Yaw / 4.0f;
+	TurnLocation.Z = TurnRotation.Roll / 1.5f;
 
 	OldRotation = CurrentRotation;
 }

@@ -650,11 +650,11 @@ void AWeapon::FireShot()
 	{
 		if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(PawnOwner->GetController()))
 		{
-			if (RecoilCurve)
+			/*if (RecoilCurve)
 			{
 				const FVector2D RecoilAmount(RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).X, RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).Y);
 				PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
-			}
+			}*/
 
 			FVector SocketLoc;
 			FRotator SocketRot;
