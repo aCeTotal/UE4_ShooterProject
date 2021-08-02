@@ -98,6 +98,18 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	class USkeletalMeshComponent* HandMesh1P;
 
+	/** Pawn mesh: 1st person view (Torso; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	class USkeletalMeshComponent* TorsoMesh1P;
+
+	/** Pawn mesh: 1st person view (Torso; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	class USkeletalMeshComponent* LegsMesh1P;
+
+	/** Pawn mesh: 1st person view (Torso; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
+	class USkeletalMeshComponent* FeetMesh1P;
+
 	/**Modular character seen by everyone else*/
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class USkeletalMeshComponent* HelmetMesh3P;
@@ -193,6 +205,10 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerUpdateOffsetState(EWeaponOffsetState NewState);
+
+	// Indicates whether the Player Character is running or not.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bWeaponOnHip = false;
 
 	// Indicates whether the Player Character is running or not.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

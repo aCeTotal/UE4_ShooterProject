@@ -52,6 +52,7 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	ProneToCrouchDelay = 2.f;
 
 	bIsAiming = false;
+	bWeaponOnHip = true;
 	
 	//Set Health
 	MaxHealth = 100.f;
@@ -88,12 +89,6 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	LootPlayerInteraction->SetActive(false, true);
 	LootPlayerInteraction->bAutoActivate = false;
 
-	/*// Create a camera boom and attach it to Head socket.
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(GetMesh(), FName("sHead"));
-	CameraBoom->TargetArmLength = 0.f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller*/
-
 	// Create a CameraComponent	
 	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
@@ -115,6 +110,26 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 	HandMesh1P->SetMasterPoseComponent(ArmsMesh1P);
 	HandMesh1P->bCastDynamicShadow = false;
 	HandMesh1P->CastShadow = false;
+
+	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
+	TorsoMesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TorsoMesh1P"));
+	TorsoMesh1P->SetOnlyOwnerSee(true);
+	TorsoMesh1P->SetupAttachment(GetCapsuleComponent());
+	TorsoMesh1P->bCastDynamicShadow = false;
+	TorsoMesh1P->CastShadow = false;
+	
+	LegsMesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LegsMesh1P"));
+	LegsMesh1P->SetOnlyOwnerSee(true);
+	LegsMesh1P->SetupAttachment(TorsoMesh1P);
+	LegsMesh1P->bCastDynamicShadow = false;
+	LegsMesh1P->CastShadow = false;
+
+	FeetMesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FeetMesh1P"));
+	FeetMesh1P->SetOnlyOwnerSee(true);
+	FeetMesh1P->SetupAttachment(LegsMesh1P);
+	FeetMesh1P->SetMasterPoseComponent(LegsMesh1P);
+	FeetMesh1P->bCastDynamicShadow = false;
+	FeetMesh1P->CastShadow = false;
 
 	//3P - Modular Character
 	HelmetMesh3P = PlayerMeshes.Add(EEquippableSlot::EIS_Helmet, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HelmetMesh")));
@@ -398,6 +413,7 @@ void AShooterProjectCharacter::StartAiming()
 	if (CanAim())
 	{
 		SetAiming(true);
+		bWeaponOnHip = false;
 		EquippedWeapon->CurrentSight = EquippedWeapon->PrimarySight;
 
 		if (PlayerAnimInstance)
@@ -412,6 +428,7 @@ void AShooterProjectCharacter::StopAiming()
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->CurrentSight = EquippedWeapon->WeaponHipLocation;
+		bWeaponOnHip = true;
 
 		if (PlayerAnimInstance)
 		{

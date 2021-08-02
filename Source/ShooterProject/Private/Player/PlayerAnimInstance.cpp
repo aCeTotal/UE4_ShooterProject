@@ -30,7 +30,7 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 	// Cache pawn
 	Character = Cast<AShooterProjectCharacter>(TryGetPawnOwner());
 
-	if (bWeaponEquipped)
+	if (Character && bWeaponEquipped)
 	{
 		OldRotation = Character->GetControlRotation();
 	}
@@ -51,7 +51,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		if (Character)
 		{
-			
+			bWeaponOnHip = Character->bWeaponOnHip;
 			bWeaponEquipped = Character->IsHoldingWeapon();
 			bIsInAir = Character->GetMovementComponent()->IsFalling();
 			bIsLocallyControlled = Character->IsLocallyControlled();
@@ -78,27 +78,29 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	//Call the Transform functions only when a weapon is equipped
-	if (!bInterpRelativeHand && bWeaponEquipped)
+	if (Character && !bInterpRelativeHand && bWeaponEquipped)
 	{
 		SetSightTransform();
 		SetRelativeHandTransform();
 		SetLeftHandTransform();
 	}
 
-	if (bInterpAiming && bWeaponEquipped)
+	if (Character && bInterpAiming && bWeaponEquipped)
 	{
 		InterpAiming(DeltaSeconds);
 	}
 
-	if (bInterpRelativeHand && bWeaponEquipped)
+	if (Character && bInterpRelativeHand && bWeaponEquipped)
 	{
 		InterpRelativeHand(DeltaSeconds);
 	}
 
-	if (bWeaponEquipped)
+	if (Character && bWeaponEquipped)
 	{
 		MoveVectorCurve(DeltaSeconds);
 		SwayRotationOffset(DeltaSeconds);
+		InterpRecoil(DeltaSeconds);
+		InterpFinalRecoil(DeltaSeconds);
 	}
 
 }
@@ -173,30 +175,63 @@ void UPlayerAnimInstance::InterpRelativeHand(float DeltaSeconds)
 
 void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 {
-	if (Speed == 0.0f)
+	if (!bWeaponOnHip)
 	{
-		if (IdleCurve)
+		if (Speed == 0.0f)
 		{
-			FVector NewVector = IdleCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
-			SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			if (CurrentWeapon->Aiming_IdleCurve)
+			{
+				FVector NewVector = CurrentWeapon->Aiming_IdleCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+				SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			}
 		}
-	}
 	
-	if (Speed > 0.0f && bIsCrouching)
-	{
-		if (SlowWalkCurve)
+		if (Speed > 0.0f && bIsCrouching)
 		{
-			FVector NewVector = SlowWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
-			SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			if (CurrentWeapon->Aiming_SlowWalkCurve)
+			{
+				FVector NewVector = CurrentWeapon->Aiming_SlowWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+				SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			}
+		}
+
+		if (Speed > 0.0f && !bIsCrouching)
+		{
+			if (CurrentWeapon->Aiming_FastWalkCurve)
+			{
+				FVector NewVector = CurrentWeapon->Aiming_FastWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+				SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			}
 		}
 	}
 
-	if (Speed > 0.0f && !bIsCrouching)
+	if (bWeaponOnHip)
 	{
-		if (FastWalkCurve)
+		if (Speed == 0.0f)
 		{
-			FVector NewVector = FastWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
-			SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			if (CurrentWeapon->Hip_IdleCurve)
+			{
+				FVector NewVector = CurrentWeapon->Hip_IdleCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+				SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			}
+		}
+	
+		if (Speed > 0.0f && bIsCrouching)
+		{
+			if (CurrentWeapon->Hip_SlowWalkCurve)
+			{
+				FVector NewVector = CurrentWeapon->Hip_SlowWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+				SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			}
+		}
+
+		if (Speed > 0.0f && !bIsCrouching)
+		{
+			if (CurrentWeapon->Hip_FastWalkCurve)
+			{
+				FVector NewVector = CurrentWeapon->Hip_FastWalkCurve->GetVectorValue(Character->GetGameTimeSinceCreation());
+				SwayLocation = UKismetMathLibrary::VInterpTo(SwayLocation, NewVector, DeltaSeconds, 10.0f);
+			}
 		}
 	}
 }
@@ -204,17 +239,24 @@ void UPlayerAnimInstance::MoveVectorCurve(float DeltaSeconds)
 void UPlayerAnimInstance::SwayRotationOffset(float DeltaSeconds)
 {
 	FRotator CurrentRotation = Character->GetControlRotation();
-	TurnRotation = UKismetMathLibrary::RInterpTo(TurnRotation, CurrentRotation - OldRotation, DeltaSeconds, 6.0f);
-	TurnRotation.Roll = TurnRotation.Pitch * 1.5f;
+	UnmodifiedRotator = UKismetMathLibrary::RInterpTo(UnmodifiedRotator, CurrentRotation - OldRotation, DeltaSeconds, 6.0f);
+	FRotator TurnRotation = UnmodifiedRotator;
+	TurnRotation.Roll = TurnRotation.Pitch;
+	TurnRotation.Pitch = 0.0f;
 
 	TurnRotation.Yaw = FMath::Clamp(TurnRotation.Yaw, -8.0f, 8.0f);
 	TurnRotation.Roll = FMath::Clamp(TurnRotation.Roll, -5.0f, 5.0f);
 
+	FVector TurnLocation;
 	TurnLocation.X = TurnRotation.Yaw / 4.0f;
 	TurnLocation.Z = TurnRotation.Roll / 1.5f;
 
+	TurnSwayTransform.SetLocation(TurnLocation);
+	TurnSwayTransform.SetRotation(TurnRotation.Quaternion());
+
 	OldRotation = CurrentRotation;
 }
+
 
 void UPlayerAnimInstance::SetAiming(bool bNewAiming)
 {
@@ -230,6 +272,7 @@ void UPlayerAnimInstance::CycledWeaponSight()
 	SetFinalHandTransform();
 	bInterpRelativeHand = true;
 }
+
 
 //Calculate direction
 float UPlayerAnimInstance::CalculateDirection(const FVector& PlayerVelocity, const FRotator& PlayerRotation) const
@@ -257,4 +300,29 @@ float UPlayerAnimInstance::CalculateDirection(const FVector& PlayerVelocity, con
 	}
 
 	return 0.f;
+}
+
+void UPlayerAnimInstance::InterpFinalRecoil(float DeltaSeconds)
+{ //Interp to Zero
+
+	FinalRecoilTransform = UKismetMathLibrary::TInterpTo(FinalRecoilTransform, FTransform(), DeltaSeconds, 15.0f);
+	
+}
+
+void UPlayerAnimInstance::InterpRecoil(float DeltaSeconds)
+{ //Interp to FinalRecoilTransform
+
+	RecoilTransform = UKismetMathLibrary::TInterpTo(RecoilTransform, FinalRecoilTransform, DeltaSeconds, 15.0f);
+}
+
+void UPlayerAnimInstance::Recoil()
+{
+	FVector RecoilLoc = FinalRecoilTransform.GetLocation();
+	RecoilLoc += FVector(FMath::RandRange(-0.1f, 0.1f), -5.0f, FMath::RandRange(0.2f, 1.0f));
+	
+	FRotator RecoilRot = FinalRecoilTransform.GetRotation().Rotator();
+	RecoilRot += FRotator(FMath::RandRange(-5.0f, 5.0f), FMath::RandRange(-1.0f, 1.0f), FMath::RandRange(-3.0f, 2.0f));
+
+	FinalRecoilTransform.SetRotation(RecoilRot.Quaternion());
+	FinalRecoilTransform.SetLocation(RecoilLoc);
 }

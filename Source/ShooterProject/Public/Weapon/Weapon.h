@@ -12,6 +12,9 @@ class UAudioComponent;
 class UParticleSystemComponent;
 class UForceFeedbackEffect;
 class USoundCue;
+class UCurveVector;
+
+class UPlayerAnimInstance;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -113,6 +116,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY()
+	UPlayerAnimInstance* PlayerAnimInstance;
 
 	// Consume a bullet
 	void UseMagazineAmmo();
@@ -235,6 +241,24 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	float DistanceToSight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
+	UCurveVector* Aiming_IdleCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
+	UCurveVector* Aiming_SlowWalkCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
+	UCurveVector* Aiming_FastWalkCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
+	UCurveVector* Hip_IdleCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
+	UCurveVector* Hip_SlowWalkCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
+	UCurveVector* Hip_FastWalkCurve;
 
 protected:
 

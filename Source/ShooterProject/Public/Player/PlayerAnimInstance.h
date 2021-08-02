@@ -22,6 +22,8 @@ class SHOOTERPROJECT_API UPlayerAnimInstance : public UAnimInstance
 
 public:
 
+	bool bWeaponOnHip;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Character")
 	AShooterProjectCharacter* Character;
 
@@ -40,26 +42,21 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	float AimAlpha;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UCurveVector* IdleCurve;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UCurveVector* SlowWalkCurve;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UCurveVector* FastWalkCurve;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	FVector SwayLocation;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
-	FRotator TurnRotation;
+	FRotator UnmodifiedRotator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
-	FVector TurnLocation;
+	FTransform TurnSwayTransform;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	FRotator OldRotation;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	FTransform RecoilTransform;
+	FTransform FinalRecoilTransform;
 
 	
 	bool bInterpAiming;
@@ -78,6 +75,9 @@ protected:
 
 	void MoveVectorCurve(float DeltaSeconds);
 	void SwayRotationOffset(float DeltaSeconds);
+
+	void InterpFinalRecoil(float DeltaSeconds);
+	void InterpRecoil(float DeltaSeconds);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool bIsInAir;
@@ -130,6 +130,9 @@ public:
 	void SetAiming(bool bNewAiming);
 
 	void CycledWeaponSight();
+
+	UFUNCTION(BlueprintCallable, Category = Weapon)
+	void Recoil();
 
 private:
 

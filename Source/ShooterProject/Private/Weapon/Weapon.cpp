@@ -98,6 +98,11 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 	CurrentSight = WeaponHipLocation;
 
+	if (PawnOwner)
+	{
+		PlayerAnimInstance = Cast<UPlayerAnimInstance>(PawnOwner->Get1PMesh()->GetAnimInstance());
+	}
+
 	// Server sets PawnOwner at Spawn/GameStart
 	if (HasAuthority())
 	{
@@ -650,11 +655,11 @@ void AWeapon::FireShot()
 	{
 		if (AShooterProjectPlayerController* PC = Cast<AShooterProjectPlayerController>(PawnOwner->GetController()))
 		{
-			/*if (RecoilCurve)
+			//Adds recoil
+			if (PlayerAnimInstance)
 			{
-				const FVector2D RecoilAmount(RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).X, RecoilCurve->GetVectorValue(FMath::RandRange(0.f, 1.f)).Y);
-				PC->ApplyRecoil(RecoilAmount, RecoilSpeed, RecoilResetSpeed, FireCameraShake);
-			}*/
+				PlayerAnimInstance->Recoil();
+			}
 
 			FVector SocketLoc;
 			FRotator SocketRot;
@@ -677,7 +682,7 @@ void AWeapon::FireShot()
 				HandleHit(Hit, HitChar);
 
 				FColor PointColor = FColor::Red;
-				DrawDebugPoint(GetWorld(), Hit.ImpactPoint, 5.f, PointColor, false, 30.f);
+				DrawDebugPoint(GetWorld(), Hit.ImpactPoint, 5.f, PointColor, true, 30.f);
 			}
 
 		}
