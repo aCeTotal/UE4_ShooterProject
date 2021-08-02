@@ -67,6 +67,25 @@ AWeapon::AWeapon()
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
+	
+	InterpFinalRecoil_Speed = 15.0f;
+	InterpRecoil_Speed = 15.0f;
+
+	//Recoil Location
+	RecoilLocation_X_Min = -0.1f;
+	RecoilLocation_X_Max = 0.1f;
+	RecoilLocation_Y_Min = -5.0f;
+	RecoilLocation_Y_Max = -5.0f;
+	RecoilLocation_Z_Min = 0.2f;
+	RecoilLocation_Z_Max = 1.0f;
+
+	//Recoil Rotation
+	RecoilRotation_Pitch_Min = -5.0f;
+	RecoilRotation_Pitch_Max = 5.0f;
+	RecoilRotation_Yaw_Min = -1.0f;
+	RecoilRotation_Yaw_Max = 1.0f;
+	RecoilRotation_Roll_Min = -3.0f;
+	RecoilRotation_Roll_Max = 2.0f;
 
 }
 

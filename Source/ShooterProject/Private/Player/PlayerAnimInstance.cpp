@@ -97,6 +97,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	if (Character && bWeaponEquipped)
 	{
+		GetRecoilValues();
 		MoveVectorCurve(DeltaSeconds);
 		SwayRotationOffset(DeltaSeconds);
 		InterpRecoil(DeltaSeconds);
@@ -105,6 +106,28 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 }
 
+
+void UPlayerAnimInstance::GetRecoilValues()
+{
+	InterpRecoil_Speed = CurrentWeapon->InterpRecoil_Speed;
+	InterpFinalRecoil_Speed = CurrentWeapon->InterpFinalRecoil_Speed;
+	
+	//Recoil Location
+	RecoilLocation_X_Min = CurrentWeapon->RecoilLocation_X_Min;
+	RecoilLocation_X_Max = CurrentWeapon->RecoilLocation_X_Max;
+	RecoilLocation_Y_Min = CurrentWeapon->RecoilLocation_Y_Min;
+	RecoilLocation_Y_Max = CurrentWeapon->RecoilLocation_Y_Max;
+	RecoilLocation_Z_Min = CurrentWeapon->RecoilLocation_Z_Min;
+	RecoilLocation_Z_Max = CurrentWeapon->RecoilLocation_Z_Max;
+
+	//Recoil Rotation
+	RecoilRotation_Pitch_Min = CurrentWeapon->RecoilRotation_Pitch_Min;
+	RecoilRotation_Pitch_Max = CurrentWeapon->RecoilRotation_Pitch_Max;
+	RecoilRotation_Yaw_Min = CurrentWeapon->RecoilRotation_Yaw_Min;
+	RecoilRotation_Yaw_Max = CurrentWeapon->RecoilRotation_Yaw_Max;
+	RecoilRotation_Roll_Min = CurrentWeapon->RecoilRotation_Roll_Min;
+	RecoilRotation_Roll_Max = CurrentWeapon->RecoilRotation_Roll_Max;
+}
 
 void UPlayerAnimInstance::SetSightTransform()
 {
@@ -305,23 +328,23 @@ float UPlayerAnimInstance::CalculateDirection(const FVector& PlayerVelocity, con
 void UPlayerAnimInstance::InterpFinalRecoil(float DeltaSeconds)
 { //Interp to Zero
 
-	FinalRecoilTransform = UKismetMathLibrary::TInterpTo(FinalRecoilTransform, FTransform(), DeltaSeconds, 15.0f);
+	FinalRecoilTransform = UKismetMathLibrary::TInterpTo(FinalRecoilTransform, FTransform(), DeltaSeconds, InterpFinalRecoil_Speed);
 	
 }
 
 void UPlayerAnimInstance::InterpRecoil(float DeltaSeconds)
 { //Interp to FinalRecoilTransform
 
-	RecoilTransform = UKismetMathLibrary::TInterpTo(RecoilTransform, FinalRecoilTransform, DeltaSeconds, 15.0f);
+	RecoilTransform = UKismetMathLibrary::TInterpTo(RecoilTransform, FinalRecoilTransform, DeltaSeconds, InterpRecoil_Speed);
 }
 
 void UPlayerAnimInstance::Recoil()
 {
 	FVector RecoilLoc = FinalRecoilTransform.GetLocation();
-	RecoilLoc += FVector(FMath::RandRange(-0.1f, 0.1f), -5.0f, FMath::RandRange(0.2f, 1.0f));
+	RecoilLoc += FVector(FMath::RandRange(RecoilLocation_X_Min, RecoilLocation_X_Max), FMath::RandRange(RecoilLocation_Y_Min, RecoilLocation_Y_Max), FMath::RandRange(RecoilLocation_Z_Min, RecoilLocation_Z_Max));
 	
 	FRotator RecoilRot = FinalRecoilTransform.GetRotation().Rotator();
-	RecoilRot += FRotator(FMath::RandRange(-5.0f, 5.0f), FMath::RandRange(-1.0f, 1.0f), FMath::RandRange(-3.0f, 2.0f));
+	RecoilRot += FRotator(FMath::RandRange(RecoilRotation_Pitch_Min, RecoilRotation_Pitch_Max), FMath::RandRange(RecoilRotation_Yaw_Min, RecoilRotation_Yaw_Max), FMath::RandRange(RecoilRotation_Roll_Min, RecoilRotation_Roll_Max));
 
 	FinalRecoilTransform.SetRotation(RecoilRot.Quaternion());
 	FinalRecoilTransform.SetLocation(RecoilLoc);

@@ -260,6 +260,38 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Curves")
 	UCurveVector* Hip_FastWalkCurve;
 
+	//Recoil
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float InterpFinalRecoil_Speed;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float InterpRecoil_Speed;
+
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilLocation_X_Min;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilLocation_X_Max;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilLocation_Y_Min;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilLocation_Y_Max;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilLocation_Z_Min;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilLocation_Z_Max;
+
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilRotation_Pitch_Min;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilRotation_Pitch_Max;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilRotation_Yaw_Min;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilRotation_Yaw_Max;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilRotation_Roll_Min;
+	UPROPERTY(EditDefaultsOnly, Category = Recoil)
+	float RecoilRotation_Roll_Max;
+
 protected:
 
 	//Adjust to handle frame rate affecting actual timer interval

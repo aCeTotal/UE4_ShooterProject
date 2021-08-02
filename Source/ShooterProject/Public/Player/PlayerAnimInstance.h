@@ -62,6 +62,41 @@ public:
 	bool bInterpAiming;
 	bool bInterpRelativeHand;
 
+
+	//Recoil
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float InterpFinalRecoil_Speed;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float InterpRecoil_Speed;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilLocation_X_Min;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilLocation_X_Max;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilLocation_Y_Min;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilLocation_Y_Max;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilLocation_Z_Min;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilLocation_Z_Max;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilRotation_Pitch_Min;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilRotation_Pitch_Max;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilRotation_Yaw_Min;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilRotation_Yaw_Max;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilRotation_Roll_Min;
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
+	float RecoilRotation_Roll_Max;
+
+	void GetRecoilValues();
+
 protected:
 
 	//Functions used to get the weapon sight in front of the camera
