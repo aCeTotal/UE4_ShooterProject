@@ -86,6 +86,11 @@ void UItem::Use(class AShooterProjectCharacter* Character)
 
 }
 
+void UItem::PlaceItem(AShooterProjectCharacter* Character)
+{
+	
+}
+
 void UItem::AddedToInventory(class UInventoryComponent* Inventory)
 {
 

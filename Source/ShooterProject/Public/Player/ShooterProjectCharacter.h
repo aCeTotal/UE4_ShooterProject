@@ -164,6 +164,25 @@ protected:
 	UFUNCTION()
 	void OnRep_LootSource();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Hotbar)
+	AWeapon* WeaponCache;
+
+	//Hotbar items
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Hotbar)
+	UWeaponItem* PrimaryWeaponItem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Hotbar)
+	UWeaponItem* SecondaryWeaponItem;
+
+	//Hotbar Weapon Items
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Hotbar)
+	AWeapon* PrimaryWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Hotbar)
+	AWeapon* SecondaryWeapon;
+
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Looting")
@@ -282,6 +301,15 @@ public:
 
 	// Items
 
+	void SpawnHotbarItems();
+
+	/**[Server] Use an item from our inventory*/
+	UFUNCTION(BlueprintCallable, Category = "Items")
+	void PlaceItem(class UItem* Item);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPlaceItem(class UItem* Item);
+
 	/**[Server] Use an item from our inventory*/
 	UFUNCTION(BlueprintCallable, Category = "Items")
 	void UseItem(class UItem* Item);
@@ -300,6 +328,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	TSubclassOf<class APickup> PickupClass;
 
+	bool SpawnItem(class UEquippableItem* Item);
+	bool RemoveItem(class UEquippableItem* Item);
+
 	bool EquipItem(class UEquippableItem* Item);
 	bool UnEquipItem(class UEquippableItem* Item);
 
@@ -307,7 +338,10 @@ public:
 	void UnEquipGear(const EEquippableSlot Slot);
 
 	void EquipWeapon(class UWeaponItem* WeaponItem);
-	void UnEquipWeapon();
+	void UnEquipWeapon(class UWeaponItem* WeaponItem);
+
+	void SpawnWeapon(class UWeaponItem* WeaponItem);
+	void RemoveWeapon(class UWeaponItem* WeaponItem);
 
 
 	UPROPERTY(BlueprintAssignable, Category = "Items")
@@ -362,6 +396,8 @@ protected:
 
 	//Play Weapon animations
 	float Play1PMontage(UAnimMontage* Montage);
+
+	bool bWeaponSpawned;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentSight)
 	UStaticMeshComponent* CurrentSight;
@@ -500,6 +536,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE class USkeletalMeshComponent* Get1PMesh() const { return ArmsMesh1P; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE class USkeletalMeshComponent* Get1PTorso() const { return TorsoMesh1P; }
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE class UStaticMeshComponent* GetNextSight() const { return NextSight; }

@@ -110,6 +110,7 @@ public:
 	virtual bool ShouldShowInInventory() const;
 
 	virtual void Use(class AShooterProjectCharacter* Character);
+	virtual void PlaceItem(class AShooterProjectCharacter* Character);
 	virtual void AddedToInventory(class UInventoryComponent* Inventory);
 
 	/** Mark the object as needing replication. We must call this internally after modifying any replicated properties */

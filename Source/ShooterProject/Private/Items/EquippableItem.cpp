@@ -11,6 +11,7 @@ UEquippableItem::UEquippableItem()
 {
 	bStackable = false;
 	bEquipped = false;
+	bItemDropped = false;
 	UseActionText = LOCTEXT("ItemUseActionText", "Equip");
 }
 
@@ -21,6 +22,7 @@ void UEquippableItem::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 
 	//Replicates bEquipped
 	DOREPLIFETIME(UEquippableItem, bEquipped);
+	DOREPLIFETIME(UEquippableItem, bSpawned);
 }
 
 void UEquippableItem::Use(class AShooterProjectCharacter* Character)
@@ -32,8 +34,21 @@ void UEquippableItem::Use(class AShooterProjectCharacter* Character)
 			UEquippableItem* AlreadyEquippedItem = *Character->GetEquippedItems().Find(Slot);
 			AlreadyEquippedItem->SetEquipped(false);
 		}
-
 		SetEquipped(!IsEquipped());
+	}
+}
+
+void UEquippableItem::PlaceItem(AShooterProjectCharacter* Character)
+{
+	if (Character && Character->HasAuthority())
+	{
+		if (Character->GetEquippedItems().Contains(Slot) && !bSpawned)
+		{
+			UEquippableItem* AlreadyEquippedItem = *Character->GetEquippedItems().Find(Slot);
+			AlreadyEquippedItem->SetSpawned(false);
+		}
+
+		SetSpawned(!IsSpawned());
 	}
 }
 
@@ -55,15 +70,40 @@ bool UEquippableItem::Unequip(class AShooterProjectCharacter* Character)
 	return false;
 }
 
+bool UEquippableItem::Spawn(class AShooterProjectCharacter* Character)
+{
+	if (Character)
+	{
+		return Character->SpawnItem(this);
+	}
+	return false;
+}
+
+bool UEquippableItem::Remove(class AShooterProjectCharacter* Character)
+{
+	if (Character)
+	{
+		return Character->RemoveItem(this);
+	}
+	return false;
+}
+
 bool UEquippableItem::ShouldShowInInventory() const
 {
-	return !bEquipped;
+	return !bEquipped && !bSpawned;
 }
 
 void UEquippableItem::SetEquipped(bool bNewEquipped)
 {
 	bEquipped = bNewEquipped;
 	EquipStatusChanged();
+	MarkDirtyForReplication();
+}
+
+void UEquippableItem::SetSpawned(bool bNewSpawn)
+{
+	bSpawned = bNewSpawn;
+	SpawnStatusChanged();
 	MarkDirtyForReplication();
 }
 
@@ -78,6 +118,24 @@ void UEquippableItem::EquipStatusChanged()
 		else
 		{
 			Unequip(Character);
+		}
+	}
+
+	//Tell UI to update
+	OnItemModified.Broadcast();
+}
+
+void UEquippableItem::SpawnStatusChanged()
+{
+	if (AShooterProjectCharacter* Character = Cast<AShooterProjectCharacter>(GetOuter()))
+	{
+		if (bSpawned)
+		{
+			Spawn(Character);
+		}
+		else
+		{
+			Remove(Character);
 		}
 	}
 

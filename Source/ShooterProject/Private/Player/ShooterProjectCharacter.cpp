@@ -53,6 +53,7 @@ AShooterProjectCharacter::AShooterProjectCharacter()
 
 	bIsAiming = false;
 	bWeaponOnHip = true;
+	bWeaponSpawned = false;
 	
 	//Set Health
 	MaxHealth = 100.f;
@@ -713,6 +714,49 @@ float AShooterProjectCharacter::GetRemainingInteractTime() const
 	return GetWorldTimerManager().GetTimerRemaining(TimerHandle_Interact);
 }
 
+void AShooterProjectCharacter::SpawnHotbarItems()
+{
+}
+
+void AShooterProjectCharacter::PlaceItem(UItem* Item)
+{
+	//If not server, make the server run the function again.
+	if (GetLocalRole() < ROLE_Authority && Item)
+	{
+		ServerPlaceItem(Item);
+	}
+
+	//If server, make sure the inventory and item exist
+	if (HasAuthority())
+	{
+		if (PlayerInventory && !PlayerInventory->FindItem(Item))
+		{
+			return;
+		}
+	}
+
+	//Runs the Use-function on both client and server
+	if (Item)
+	{
+		Item->PlaceItem(this);
+		UE_LOG(LogTemp, Warning, TEXT("ItemPlaced! - PlaceItem") );
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot place item") );
+	}
+}
+
+void AShooterProjectCharacter::ServerPlaceItem_Implementation(UItem* Item)
+{
+	PlaceItem(Item);
+}
+
+bool AShooterProjectCharacter::ServerPlaceItem_Validate(UItem* Item)
+{
+	return true;
+}
+
 
 void AShooterProjectCharacter::UseItem(class UItem* Item)
 {
@@ -822,6 +866,32 @@ bool AShooterProjectCharacter::UnEquipItem(class UEquippableItem* Item)
 	return false;
 }
 
+bool AShooterProjectCharacter::SpawnItem(class UEquippableItem* Item)
+{
+	EquippedItems.Add(Item->Slot, Item);
+	OnEquippedItemsChanged.Broadcast(Item->Slot, Item);
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Item - Character"));
+	return true;
+}
+
+
+bool AShooterProjectCharacter::RemoveItem(class UEquippableItem* Item)
+{
+	if (Item)
+	{
+		if (EquippedItems.Contains(Item->Slot))
+		{
+			if (Item == *EquippedItems.Find(Item->Slot))
+			{
+				EquippedItems.Remove(Item->Slot);
+				OnEquippedItemsChanged.Broadcast(Item->Slot, nullptr);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 void AShooterProjectCharacter::EquipGear(class UGearItem* Gear)
 {
@@ -863,11 +933,31 @@ void AShooterProjectCharacter::EquipWeapon(UWeaponItem* WeaponItem)
 {
 	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
 	{
-		if (EquippedWeapon)
+		if (AWeapon* Weapon = Cast<AWeapon>(WeaponItem->WeaponClass))
 		{
-			UnEquipWeapon();
+			EquippedWeapon = Weapon;
+			OnRep_EquippedWeapon();
+			Weapon->OnEquip();
 		}
+	}
+}
 
+
+void AShooterProjectCharacter::UnEquipWeapon(class UWeaponItem* WeaponItem)
+{
+	if (HasAuthority() && EquippedWeapon)
+	{
+		EquippedWeapon->OnUnEquip();
+		EquippedWeapon = nullptr;
+		OnRep_EquippedWeapon();
+	}
+}
+
+void AShooterProjectCharacter::SpawnWeapon(UWeaponItem* WeaponItem)
+{
+	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
+	{
+		
 		//Spawn the weapon in
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.bNoFail = true;
@@ -877,24 +967,29 @@ void AShooterProjectCharacter::EquipWeapon(UWeaponItem* WeaponItem)
 		if (AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponItem->WeaponClass, SpawnParams))
 		{
 			Weapon->Item = WeaponItem;
-
+			
 			EquippedWeapon = Weapon;
 			OnRep_EquippedWeapon();
 
 			Weapon->OnEquip();
+			UE_LOG(LogTemp, Warning, TEXT("Weapon Spawned"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cant spawn Weapon"));
 		}
 	}
 }
 
-
-void AShooterProjectCharacter::UnEquipWeapon()
+void AShooterProjectCharacter::RemoveWeapon(UWeaponItem* WeaponItem)
 {
-	if (HasAuthority() && EquippedWeapon)
+	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
 	{
-		EquippedWeapon->OnUnEquip();
-		EquippedWeapon->Destroy();
-		EquippedWeapon = nullptr;
-		OnRep_EquippedWeapon();
+		if (AWeapon* Weapon = Cast<AWeapon>(WeaponItem->WeaponClass))
+		{
+			Weapon->Destroy();
+			OnRep_EquippedWeapon();
+		}
 	}
 }
 

@@ -21,6 +21,9 @@ public:
 	virtual bool Equip(AShooterProjectCharacter* Character) override;
 	virtual bool Unequip(AShooterProjectCharacter* Character) override;
 
+	virtual bool Spawn(AShooterProjectCharacter* Character) override;
+	virtual bool Remove(AShooterProjectCharacter* Character) override;
+
 	//The Weapon class to give to the player upon equipping this weapon item
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> WeaponClass;
