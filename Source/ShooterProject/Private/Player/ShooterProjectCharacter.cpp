@@ -739,6 +739,7 @@ void AShooterProjectCharacter::PlaceItem(UItem* Item)
 	if (Item)
 	{
 		Item->PlaceItem(this);
+		UE_LOG(LogTemp, Warning, TEXT("ItemPlaced! - PlaceItem") );
 	}
 	else
 	{
@@ -869,6 +870,7 @@ bool AShooterProjectCharacter::SpawnItem(class UEquippableItem* Item)
 {
 	EquippedItems.Add(Item->Slot, Item);
 	OnEquippedItemsChanged.Broadcast(Item->Slot, Item);
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Item - Character"));
 	return true;
 }
 
