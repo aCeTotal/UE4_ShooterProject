@@ -9,25 +9,25 @@ UWeaponItem::UWeaponItem()
 {
 }
 
-bool UWeaponItem::Equip(AShooterProjectCharacter* Character)
+bool UWeaponItem::Equip(bool bInventoryOpen, AShooterProjectCharacter* Character)
 {
-	bool BEquipSuccessful =  Super::Equip(Character);
+	bool BEquipSuccessful =  Super::Equip(bInventoryOpen, Character);
 
 	if (BEquipSuccessful && Character)
 	{
-		Character->EquipWeapon(this);
+		Character->EquipWeapon(bInventoryOpen, this);
 	}
 
 	return BEquipSuccessful;
 }
 
-bool UWeaponItem::Unequip(AShooterProjectCharacter* Character)
+bool UWeaponItem::Unequip(bool bInventoryOpen, AShooterProjectCharacter* Character)
 {
-	bool bUnEquipSuccessful = Super::Unequip(Character);
+	bool bUnEquipSuccessful = Super::Unequip(bInventoryOpen, Character);
 
 	if (bUnEquipSuccessful && Character)
 	{
-		Character->UnEquipWeapon();
+		Character->UnEquipWeapon(bInventoryOpen, this);
 	}
 
 	return bUnEquipSuccessful;

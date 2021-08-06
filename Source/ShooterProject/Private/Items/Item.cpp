@@ -81,7 +81,7 @@ bool UItem::ShouldShowInInventory() const
 	return true;
 }
 
-void UItem::Use(class AShooterProjectCharacter* Character)
+void UItem::Use(bool bInventoryOpen, class AShooterProjectCharacter* Character)
 {
 
 }

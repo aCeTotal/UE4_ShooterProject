@@ -40,20 +40,20 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty> & OutLifetimeProps) const override;
 
-	virtual void Use(class AShooterProjectCharacter* Character) override;
+	virtual void Use(bool bInventoryOpen, class AShooterProjectCharacter* Character) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Equippables")
-	virtual bool Equip(class AShooterProjectCharacter* Character);
+	virtual bool Equip(bool bInventoryOpen, class AShooterProjectCharacter* Character);
 
 	UFUNCTION(BlueprintCallable, Category = "Equippables")
-	virtual bool Unequip(class AShooterProjectCharacter* Character);
+	virtual bool Unequip(bool bInventoryOpen, class AShooterProjectCharacter* Character);
 
 	virtual bool ShouldShowInInventory() const override;
 
 	UFUNCTION(BlueprintPure, Category = "Equippables")
 	bool IsEquipped() { return bEquipped; };
 
-	void SetEquipped(bool bNewEquipped);
+	void SetEquipped(bool bNewEquipped, bool bInventoryOpen);
 
 protected:
 
@@ -63,6 +63,6 @@ protected:
 	bool bEquipped;
 	
 	UFUNCTION()
-	void EquipStatusChanged();
+	void EquipStatusChanged(bool bInventoryOpen);
 	
 };

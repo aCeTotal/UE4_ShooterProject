@@ -233,6 +233,9 @@ public:
 
 protected:
 
+	UPROPERTY(BlueprintReadOnly)
+	AWeapon* PrimaryWeapon;
+
 	//How often in seconds to check for an interactable object. Set this to zero if you want to check every tick.
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
 	float InteractionCheckFrequency;
@@ -284,10 +287,10 @@ public:
 
 	/**[Server] Use an item from our inventory*/
 	UFUNCTION(BlueprintCallable, Category = "Items")
-	void UseItem(class UItem* Item);
+	void UseItem(bool bInventoryOpen, class UItem* Item);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUseItem(class UItem* Item);
+	void ServerUseItem(bool bInventoryOpen, class UItem* Item);
 
 	/**[Server] Drop an item from our inventory*/
 	UFUNCTION(BlueprintCallable, Category = "Items")
@@ -300,14 +303,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	TSubclassOf<class APickup> PickupClass;
 
-	bool EquipItem(class UEquippableItem* Item);
-	bool UnEquipItem(class UEquippableItem* Item);
+	bool EquipItem(bool bInventoryOpen, class UEquippableItem* Item);
+	bool UnEquipItem(bool bInventoryOpen, class UEquippableItem* Item);
 
 	void EquipGear(class UGearItem* Gear);
 	void UnEquipGear(const EEquippableSlot Slot);
 
-	void EquipWeapon(class UWeaponItem* WeaponItem);
-	void UnEquipWeapon();
+	void EquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem);
+	void UnEquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem);
 
 
 	UPROPERTY(BlueprintAssignable, Category = "Items")

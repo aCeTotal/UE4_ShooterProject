@@ -23,34 +23,34 @@ void UEquippableItem::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 	DOREPLIFETIME(UEquippableItem, bEquipped);
 }
 
-void UEquippableItem::Use(class AShooterProjectCharacter* Character)
+void UEquippableItem::Use(bool bInventoryOpen, class AShooterProjectCharacter* Character)
 {
 	if (Character && Character->HasAuthority())
 	{
 		if (Character->GetEquippedItems().Contains(Slot) && !bEquipped)
 		{
 			UEquippableItem* AlreadyEquippedItem = *Character->GetEquippedItems().Find(Slot);
-			AlreadyEquippedItem->SetEquipped(false);
+			AlreadyEquippedItem->SetEquipped(false, bInventoryOpen);
 		}
 
-		SetEquipped(!IsEquipped());
+		SetEquipped(!IsEquipped(), bInventoryOpen);
 	}
 }
 
-bool UEquippableItem::Equip(class AShooterProjectCharacter* Character)
+bool UEquippableItem::Equip(bool bInventoryOpen, class AShooterProjectCharacter* Character)
 {
 	if (Character)
 	{
-		return Character->EquipItem(this);
+		return Character->EquipItem(bInventoryOpen, this);
 	}
 	return false;
 }
 
-bool UEquippableItem::Unequip(class AShooterProjectCharacter* Character)
+bool UEquippableItem::Unequip(bool bInventoryOpen, class AShooterProjectCharacter* Character)
 {
 	if (Character)
 	{
-		return Character->UnEquipItem(this);
+		return Character->UnEquipItem(bInventoryOpen,this);
 	}
 	return false;
 }
@@ -60,24 +60,24 @@ bool UEquippableItem::ShouldShowInInventory() const
 	return !bEquipped;
 }
 
-void UEquippableItem::SetEquipped(bool bNewEquipped)
+void UEquippableItem::SetEquipped(bool bNewEquipped, bool bInventoryOpen)
 {
 	bEquipped = bNewEquipped;
-	EquipStatusChanged();
+	EquipStatusChanged(bInventoryOpen);
 	MarkDirtyForReplication();
 }
 
-void UEquippableItem::EquipStatusChanged()
+void UEquippableItem::EquipStatusChanged(bool bInventoryOpen)
 {
 	if (AShooterProjectCharacter* Character = Cast<AShooterProjectCharacter>(GetOuter()))
 	{
 		if (bEquipped)
 		{
-			Equip(Character);
+			Equip(bInventoryOpen, Character);
 		}
 		else
 		{
-			Unequip(Character);
+			Unequip(bInventoryOpen, Character);
 		}
 	}
 

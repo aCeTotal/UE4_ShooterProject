@@ -18,8 +18,8 @@ public:
 
 	UGearItem();
 
-	virtual bool Equip(class AShooterProjectCharacter* Character) override;
-	virtual bool Unequip(class AShooterProjectCharacter* Character) override;
+	virtual bool Equip(bool bInventoryOpen, class AShooterProjectCharacter* Character) override;
+	virtual bool Unequip(bool bInventoryOpen, class AShooterProjectCharacter* Character) override;
 
 	/**The skeletal mesh for this gear*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gear")

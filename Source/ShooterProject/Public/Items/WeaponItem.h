@@ -18,8 +18,8 @@ public:
 
 	UWeaponItem();
 
-	virtual bool Equip(AShooterProjectCharacter* Character) override;
-	virtual bool Unequip(AShooterProjectCharacter* Character) override;
+	virtual bool Equip(bool bInventoryOpen, AShooterProjectCharacter* Character) override;
+	virtual bool Unequip(bool bInventoryOpen, AShooterProjectCharacter* Character) override;
 
 	//The Weapon class to give to the player upon equipping this weapon item
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")

@@ -714,12 +714,12 @@ float AShooterProjectCharacter::GetRemainingInteractTime() const
 }
 
 
-void AShooterProjectCharacter::UseItem(class UItem* Item)
+void AShooterProjectCharacter::UseItem(bool bInventoryOpen, class UItem* Item)
 {
 	//If not server, make the server run the function again.
 	if (GetLocalRole() < ROLE_Authority && Item)
 	{
-		ServerUseItem(Item);
+		ServerUseItem(bInventoryOpen, Item);
 	}
 
 	//If server, make sure the inventory and item exist
@@ -734,18 +734,18 @@ void AShooterProjectCharacter::UseItem(class UItem* Item)
 	//Runs the Use-function on both client and server
 	if (Item)
 	{
-		Item->Use(this);
+		Item->Use(bInventoryOpen, this);
 	}
 }
 
 
-void AShooterProjectCharacter::ServerUseItem_Implementation(class UItem* Item)
+void AShooterProjectCharacter::ServerUseItem_Implementation(bool bInventoryOpen, class UItem* Item)
 {
-	UseItem(Item);
+	UseItem(bInventoryOpen, Item);
 }
 
 
-bool AShooterProjectCharacter::ServerUseItem_Validate(class UItem* Item)
+bool AShooterProjectCharacter::ServerUseItem_Validate(bool bInventoryOpen, class UItem* Item)
 {
 	return true;
 }
@@ -797,7 +797,7 @@ bool AShooterProjectCharacter::ServerDropItem_Validate(class UItem* Item, const 
 }
 
 
-bool AShooterProjectCharacter::EquipItem(class UEquippableItem* Item)
+bool AShooterProjectCharacter::EquipItem(bool bInventoryOpen, class UEquippableItem* Item)
 {
 	EquippedItems.Add(Item->Slot, Item);
 	OnEquippedItemsChanged.Broadcast(Item->Slot, Item);
@@ -805,7 +805,7 @@ bool AShooterProjectCharacter::EquipItem(class UEquippableItem* Item)
 }
 
 
-bool AShooterProjectCharacter::UnEquipItem(class UEquippableItem* Item)
+bool AShooterProjectCharacter::UnEquipItem(bool InventoryOpen, class UEquippableItem* Item)
 {
 	if (Item)
 	{
@@ -859,35 +859,43 @@ void AShooterProjectCharacter::UnEquipGear(const EEquippableSlot Slot)
 }
 
 
-void AShooterProjectCharacter::EquipWeapon(UWeaponItem* WeaponItem)
+void AShooterProjectCharacter::EquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem)
 {
 	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
 	{
 		if (EquippedWeapon)
 		{
-			UnEquipWeapon();
+			UnEquipWeapon(bInventoryOpen, WeaponItem);
 		}
-
-		//Spawn the weapon in
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.bNoFail = true;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		SpawnParams.Owner = SpawnParams.Instigator = this;
-
-		if (AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponItem->WeaponClass, SpawnParams))
+		if (bInventoryOpen == true)
 		{
-			Weapon->Item = WeaponItem;
+			//Spawn the weapon in
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.bNoFail = true;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			SpawnParams.Owner = SpawnParams.Instigator = this;
 
-			EquippedWeapon = Weapon;
-			OnRep_EquippedWeapon();
+			if (AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponItem->WeaponClass, SpawnParams))
+			{
+				if (WeaponItem->Slot == EEquippableSlot::EIS_PrimaryWeapon)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PrimaryWeapon uses Primary SLOT!") );
+				}
 
-			Weapon->OnEquip();
+				
+				Weapon->Item = WeaponItem;
+
+				EquippedWeapon = Weapon;
+				OnRep_EquippedWeapon();
+
+				Weapon->OnEquip();
+			}
 		}
 	}
 }
 
 
-void AShooterProjectCharacter::UnEquipWeapon()
+void AShooterProjectCharacter::UnEquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem)
 {
 	if (HasAuthority() && EquippedWeapon)
 	{
@@ -1132,7 +1140,7 @@ void AShooterProjectCharacter::OnRep_Killer()
 
 		for (auto& EquippedItem : Equippables)
 		{
-			EquippedItem->SetEquipped(false);
+			EquippedItem->SetEquipped(false, false);
 		}
 	}
 	//Show Deathscreen

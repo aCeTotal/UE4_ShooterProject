@@ -9,9 +9,9 @@ UGearItem::UGearItem()
 	DamageDefenceMultiplier = 0.1f;
 }
 
-bool UGearItem::Equip(class AShooterProjectCharacter* Character)
+bool UGearItem::Equip(bool bInventoryOpen, class AShooterProjectCharacter* Character)
 {
-	bool bEquipSuccessful = Super::Equip(Character);
+	bool bEquipSuccessful = Super::Equip(bInventoryOpen, Character);
 
 	if (bEquipSuccessful && Character)
 	{
@@ -21,9 +21,9 @@ bool UGearItem::Equip(class AShooterProjectCharacter* Character)
 	return bEquipSuccessful;
 }
 
-bool UGearItem::Unequip(class AShooterProjectCharacter* Character)
+bool UGearItem::Unequip(bool bInventoryOpen, class AShooterProjectCharacter* Character)
 {
-	bool bUnEquipSuccessful = Super::Unequip(Character);
+	bool bUnEquipSuccessful = Super::Unequip(bInventoryOpen, Character);
 
 	if (bUnEquipSuccessful && Character)
 	{
