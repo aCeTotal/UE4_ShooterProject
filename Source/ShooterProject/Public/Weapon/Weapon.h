@@ -307,15 +307,15 @@ protected:
 	UAudioComponent* FireAC;
 
 	//name of bone/socket for muzzle in weapon mesh
-	UPROPERTY(EditDefaultsOnly, Category = Sockets)
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	FName MuzzleAttachPoint;
 
 	//name of socket to attach weapon mesh to the character when Equipped
-	UPROPERTY(EditDefaultsOnly, Category = Sockets)
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	FName AttachSocket;
 
 	//name of socket to attach weapon mesh to the character when UnEquipped
-	UPROPERTY(EditDefaultsOnly, Category = Sockets)
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	FName DetachPoint;
 
 	//FX for muzzle flash

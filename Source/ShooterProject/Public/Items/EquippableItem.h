@@ -35,9 +35,6 @@ public:
 
 	UEquippableItem();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bItemDropped;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equippables")
 	EEquippableSlot Slot;
 
@@ -45,30 +42,18 @@ public:
 
 	virtual void Use(class AShooterProjectCharacter* Character) override;
 
-	virtual void PlaceItem(class AShooterProjectCharacter* Character) override;
-
 	UFUNCTION(BlueprintCallable, Category = "Equippables")
 	virtual bool Equip(class AShooterProjectCharacter* Character);
 
 	UFUNCTION(BlueprintCallable, Category = "Equippables")
 	virtual bool Unequip(class AShooterProjectCharacter* Character);
 
-	UFUNCTION(BlueprintCallable, Category = "Equippables")
-	virtual bool Spawn(class AShooterProjectCharacter* Character);
-
-	UFUNCTION(BlueprintCallable, Category = "Equippables")
-	virtual bool Remove(class AShooterProjectCharacter* Character);
-
 	virtual bool ShouldShowInInventory() const override;
 
 	UFUNCTION(BlueprintPure, Category = "Equippables")
 	bool IsEquipped() { return bEquipped; };
-	
-	UFUNCTION(BlueprintPure, Category = "Equippables")
-	bool IsSpawned() { return bSpawned; };
 
 	void SetEquipped(bool bNewEquipped);
-	void SetSpawned(bool bNewSpawn);
 
 protected:
 
@@ -76,15 +61,8 @@ protected:
 	//True if item is equipped, and false if unequipped
 	UPROPERTY(ReplicatedUsing = EquipStatusChanged)
 	bool bEquipped;
-
-	//True if item is equipped, and false if unequipped
-	UPROPERTY(ReplicatedUsing = EquipStatusChanged)
-	bool bSpawned;
 	
 	UFUNCTION()
 	void EquipStatusChanged();
-
-	UFUNCTION()
-	void SpawnStatusChanged();
 	
 };

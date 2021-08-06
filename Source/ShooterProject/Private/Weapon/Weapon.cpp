@@ -868,7 +868,7 @@ void AWeapon::AttachMeshToPawn()
 	if (PawnOwner)
 	{
 		// Remove and hide both first and third person meshes
-		//DetachMeshFromPawn();
+		DetachMeshFromPawn();
 
 		USkeletalMeshComponent* PawnMesh = PawnOwner->Get1PMesh();
 		AttachToComponent(PawnOwner->Get1PMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocket);
@@ -878,14 +878,7 @@ void AWeapon::AttachMeshToPawn()
 
 void AWeapon::DetachMeshFromPawn()
 {
-	if (PawnOwner)
-	{
-		// Remove and hide both first and third person meshes
-		//DetachMeshFromPawn();
 
-		USkeletalMeshComponent* PawnMesh = PawnOwner->Get1PTorso();
-		AttachToComponent(PawnOwner->Get1PTorso(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, DetachPoint);
-	}
 }
 
 
