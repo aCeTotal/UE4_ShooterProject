@@ -236,6 +236,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	AWeapon* PrimaryWeapon;
 
+	UPROPERTY(BlueprintReadOnly)
+	AWeapon* SecondaryWeapon;
+
 	//How often in seconds to check for an interactable object. Set this to zero if you want to check every tick.
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
 	float InteractionCheckFrequency;
@@ -503,6 +506,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE class USkeletalMeshComponent* Get1PMesh() const { return ArmsMesh1P; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE class USkeletalMeshComponent* Get1PTorso() const { return TorsoMesh1P; }
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE class UStaticMeshComponent* GetNextSight() const { return NextSight; }

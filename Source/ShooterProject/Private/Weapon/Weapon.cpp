@@ -878,7 +878,11 @@ void AWeapon::AttachMeshToPawn()
 
 void AWeapon::DetachMeshFromPawn()
 {
-
+	if (PawnOwner)
+	{
+		USkeletalMeshComponent* PawnMesh = PawnOwner->Get1PTorso();
+		AttachToComponent(PawnOwner->Get1PTorso(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, DetachPoint);
+	}
 }
 
 
