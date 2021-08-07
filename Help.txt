@@ -1,0 +1,90 @@
+
+
+
+
+
+
+
+Generic problems:
+
+Problem: Weapon level is missing in version 4.7
+
+Solution: This is a bug and the level is present in the folder, if you upgrade to 4.8 or above it will appear in your project. 
+Please note that the weapon level isn´t required in order to use any content.
+
+
+LODs:
+
+LODs have been fixed for Unreal 4.12 and the reason is that older Unreal versions doesn´t offer the same support. 
+We recommend that you update to 4.12 or above in order to avoid problems. 
+However, it´s still possible to import LODs into older versions but additional work may be required.
+
+LODs have been fixed for skeletal meshes along the Y-axis, if you wish to use the LODs for X-axis you need to fix this in a 3D program.
+
+
+Import:
+
+Unzip the file with the LODs located under source files in your project folders. 
+In order to import a LOD locate the weapon mesh (in your Unreal editor) that has the same name as the LOD you wish to import. 
+Dubbleclick the mesh to open a new window and check that the mesh is rigged and pointing along the Y-axis. 
+Under "Asset Details" locate "Import Settings" and make sure to select the following options:
+
+Use TOAs Ref Pose
+Preserve Smoothing Groups
+Import Meshes in Bone Hierarchy
+Transform Vertex to Absolute (this option isn´t available in older versions)
+Import Normals and Tangents
+
+Locate "LOD Settings" and select "Import LOD level 1" from the drop down menu. 
+Select the file that have been named with "*_LOD1". 
+Repeat this step for LOD2 but choose "Import LOD level 2" and the file that have been named "*_LOD2".
+
+Under LOD0, LOD1 and LOD2 locate "LOD Info" and adjust the values to your liking. 
+"Screen size" controls when Unreal switches between LOD:s.
+
+
+Possible bugs:
+
+Problem: Normals/tangents looks strange.
+
+Solution: Make sure "Import Normals and Tangents" is checked when you import. 
+The LODs have correct normals/tangents so this can only be a bug or an import/export problem.
+
+
+Problem: Normals/tangents looks strange after re-importing a LOD or re-opening the project.
+
+Solution: This is a bug that we have encounter in older versions, we are not aware of any solution and recommend an update to 4.12.
+
+
+Problem: Material on a LOD is wrong.
+(please note that you shouldn´t encounter this problem in version 4.12 or above)
+
+Possible solutions:
+
+First of all, try to identity the problem. 
+Is the material missing, is the reference broken, is something corrupt for example. 
+Older versions of Unreal are more sensitive regarding how a material is applied so you might need to change the material before you import it into Unreal.
+
+Assign the correct material by selecting it from the drop down.
+
+Open the LOD in a 3D-program and change the material name by adding "*_skin00","* _skin01", etc.
+This controls how Unreal import materials.
+
+Open the LOD in a 3D-program and change the material groups. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
