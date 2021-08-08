@@ -34,6 +34,9 @@ AWeapon::AWeapon()
 	WeaponHipLocation->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponHipLocation->SetCollisionResponseToAllChannels(ECR_Ignore);
 	WeaponHipLocation->SetupAttachment(WeaponMesh, FName("WeaponHipLocation"));
+	WeaponHipLocation->SetHiddenInGame(true);
+	WeaponHipLocation->CastShadow = false;
+	
 
 	PrimarySight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PrimarySight"));
 	PrimarySight->bReceivesDecals = false;
@@ -213,7 +216,7 @@ void AWeapon::OnEquipFinished()
 
 
 void AWeapon::OnUnEquip()
-{
+{	
 	DetachMeshFromPawn();
 	bIsEquipped = false;
 	StopFire();
@@ -868,7 +871,7 @@ void AWeapon::AttachMeshToPawn()
 	if (PawnOwner)
 	{
 		// Remove and hide both first and third person meshes
-		DetachMeshFromPawn();
+		//DetachMeshFromPawn();
 
 		USkeletalMeshComponent* PawnMesh = PawnOwner->Get1PMesh();
 		AttachToComponent(PawnOwner->Get1PMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocket);

@@ -862,13 +862,12 @@ void AShooterProjectCharacter::UnEquipGear(const EEquippableSlot Slot)
 void AShooterProjectCharacter::EquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem)
 {
 	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
-	{
-		if (EquippedWeapon)
-		{
-			UnEquipWeapon(bInventoryOpen, WeaponItem);
-		}
-		if (bInventoryOpen == true)
-		{
+	{	
+			if (EquippedWeapon)
+			{
+				UnEquipWeapon(bInventoryOpen, WeaponItem);
+			}
+			
 			//Spawn the weapon in
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.bNoFail = true;
@@ -877,41 +876,13 @@ void AShooterProjectCharacter::EquipWeapon(bool bInventoryOpen, class UWeaponIte
 
 			if (AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponItem->WeaponClass, SpawnParams))
 			{
-				//Cache Primary Weapon if placed in the Hotbar.
-				if (WeaponItem->Slot == EEquippableSlot::EIS_PrimaryWeapon)
-				{
-					PrimaryWeapon = Weapon;
-					EquippedWeapon = PrimaryWeapon;
-					OnRep_EquippedWeapon();
-					PrimaryWeapon->OnEquip();
-				}
-
-				//Cache Secondary Weapon if placed in the Hotbar.
-				if (WeaponItem->Slot == EEquippableSlot::EIS_SecondaryWeapon)
-				{
-					SecondaryWeapon = Weapon;
-				}
-
-			}
-		}
-		else
-		{
-			//Equips the Primary Weapon if available.
-			if (PrimaryWeapon && WeaponItem->Slot == EEquippableSlot::EIS_PrimaryWeapon)
-			{
-				EquippedWeapon = PrimaryWeapon;
+				EquippedWeapon = nullptr;
+				Weapon->Item = WeaponItem;
+				EquippedWeapon = Weapon;
 				OnRep_EquippedWeapon();
-				PrimaryWeapon->OnEquip();		
-			}
 
-			//Equips the Secondary Weapon if available.
-			if (SecondaryWeapon && WeaponItem->Slot == EEquippableSlot::EIS_SecondaryWeapon)
-			{
-				EquippedWeapon = SecondaryWeapon;
-				OnRep_EquippedWeapon();
-				SecondaryWeapon->OnEquip();	
+				Weapon->OnEquip();
 			}
-		}
 	}
 }
 
@@ -920,55 +891,10 @@ void AShooterProjectCharacter::UnEquipWeapon(bool bInventoryOpen, class UWeaponI
 {
 	if (HasAuthority() && EquippedWeapon)
 	{	
-		if (bInventoryOpen == true)
-		{
-			//Removes and destroys Primary Weapon if removed from Hotbar/Inventory
-			if (PrimaryWeapon && WeaponItem->Slot == EEquippableSlot::EIS_PrimaryWeapon)
-			{
-				PrimaryWeapon->OnUnEquip();
-				PrimaryWeapon->Destroy();
-				OnRep_EquippedWeapon();
-				
-				if (PrimaryWeapon == EquippedWeapon)
-				{
-					EquippedWeapon = nullptr;
-				}
-			}
-
-			//Removes and destroys Secondary Weapon if removed from Hotbar/Inventory
-			if (SecondaryWeapon && WeaponItem->Slot == EEquippableSlot::EIS_SecondaryWeapon)
-			{
-				SecondaryWeapon->OnUnEquip();
-				SecondaryWeapon->Destroy();
-				OnRep_EquippedWeapon();
-				
-				if (SecondaryWeapon == EquippedWeapon)
-				{
-					EquippedWeapon = nullptr;
-				}
-			}
-		}
-		else
-		{
-			//UnEquips Primary Weapon if equipped
-			if (PrimaryWeapon == EquippedWeapon && WeaponItem->Slot == EEquippableSlot::EIS_PrimaryWeapon)
-			{
-				PrimaryWeapon->DetachMeshFromPawn();
-				//PrimaryWeapon = nullptr;
-				EquippedWeapon = nullptr;
-				OnRep_EquippedWeapon();
-			}
-
-			//UnEquips Secondary Weapon if equipped
-			if (SecondaryWeapon == EquippedWeapon && WeaponItem->Slot == EEquippableSlot::EIS_SecondaryWeapon)
-			{
-				SecondaryWeapon->DetachMeshFromPawn();
-				//SecondaryWeapon = nullptr;
-				EquippedWeapon = nullptr;
-				OnRep_EquippedWeapon();
-			}
-		}
-
+		EquippedWeapon->OnUnEquip();
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+		OnRep_EquippedWeapon();	
 	}
 }
 
