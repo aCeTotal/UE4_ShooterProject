@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Items/EquippableItem.h"
+
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/ShooterProjectCharacter.h"
 #include "Components/InventoryComponent.h"
@@ -50,8 +52,9 @@ bool UEquippableItem::Unequip(bool bInventoryOpen, class AShooterProjectCharacte
 {
 	if (Character)
 	{
-		return Character->UnEquipItem(bInventoryOpen,this);
+		return Character->UnEquipItem(false,this);
 	}
+	
 	return false;
 }
 
@@ -72,17 +75,33 @@ void UEquippableItem::EquipStatusChanged(bool bInventoryOpen)
 	if (AShooterProjectCharacter* Character = Cast<AShooterProjectCharacter>(GetOuter()))
 	{
 		if (bEquipped)
-		{
+		{			
 			Equip(bInventoryOpen, Character);
 		}
 		else
-		{
+		{		
 			Unequip(bInventoryOpen, Character);
 		}
 	}
 
 	//Tell UI to update
 	OnItemModified.Broadcast();
+}
+
+float UEquippableItem::Play1PItemAnimation(UAnimMontage* Animation)
+{
+	float Duration = 0.0f;
+	
+	if (PawnOwner)
+	{	
+		UAnimInstance* AnimInstance = PawnOwner->Get1PMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			Duration = AnimInstance->Montage_Play(Animation);
+		}
+	}
+	
+	return Duration;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -55,6 +55,12 @@ public:
 
 	void SetEquipped(bool bNewEquipped, bool bInventoryOpen);
 
+	UPROPERTY(EditDefaultsOnly, Category = Animations)
+	class UAnimMontage* EquipMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Animations)
+	class UAnimMontage* UnEquipMontage;
+
 protected:
 
 	
@@ -64,5 +70,16 @@ protected:
 	
 	UFUNCTION()
 	void EquipStatusChanged(bool bInventoryOpen);
+
+	//Play Weapon animations on arms
+	float Play1PItemAnimation(UAnimMontage* Animation);
+
+	//Pawn owner
+	UPROPERTY()
+	class AShooterProjectCharacter* PawnOwner;
+
+	FTimerDelegate UnEquipTimerDel;
+     
+	FTimerHandle UnEquipTimerHandle;
 	
 };

@@ -189,12 +189,16 @@ void AWeapon::ReturnMagazineToInventory(int32 OldAmmo)
 
 void AWeapon::OnEquip()
 {
-	AttachMeshToPawn();
+	float AnimDuration = Play1PWeaponAnimation(Equip);
+	if (AnimDuration <= 0.0f)
+	{
+		AnimDuration = .5f;
+	}
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_Equip, this, &AWeapon::OnEquipFinished, AnimDuration / 3.f, false);
 	
 	bPendingEquip = true;
 	DetermineWeaponState();
-
-	OnEquipFinished();
 
 	if (PawnOwner && PawnOwner->IsLocallyControlled())
 	{
@@ -216,7 +220,7 @@ void AWeapon::OnEquipFinished()
 
 
 void AWeapon::OnUnEquip()
-{	
+{
 	DetachMeshFromPawn();
 	bIsEquipped = false;
 	StopFire();

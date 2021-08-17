@@ -527,7 +527,6 @@ void AShooterProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AShooterProjectCharacter::OnResetVR);
 }
 
-
 void AShooterProjectCharacter::PerformInteractionCheck()
 {
 
@@ -798,23 +797,35 @@ bool AShooterProjectCharacter::ServerDropItem_Validate(class UItem* Item, const 
 
 
 bool AShooterProjectCharacter::EquipItem(bool bInventoryOpen, class UEquippableItem* Item)
-{
+{	
 	EquippedItems.Add(Item->Slot, Item);
 	OnEquippedItemsChanged.Broadcast(Item->Slot, Item);
 	return true;
 }
 
 
-bool AShooterProjectCharacter::UnEquipItem(bool InventoryOpen, class UEquippableItem* Item)
+bool AShooterProjectCharacter::UnEquipItem(bool bInventoryOpen, class UEquippableItem* Item)
 {
-	if (Item)
+	if (Item && bIsInventoryOpen)
+	{
+		if (EquippedItems.Contains(Item->Slot))
+		{		
+			if (Item == *EquippedItems.Find(Item->Slot))
+			{		
+				EquippedItems.Remove(Item->Slot);
+				OnEquippedItemsChanged.Broadcast(Item->Slot, nullptr);
+				return true;
+			}
+		}
+	}
+
+	//Hotbar keeps showing the item when player is unequipping item
+	if (Item && !bIsInventoryOpen)
 	{
 		if (EquippedItems.Contains(Item->Slot))
 		{
 			if (Item == *EquippedItems.Find(Item->Slot))
-			{
-				EquippedItems.Remove(Item->Slot);
-				OnEquippedItemsChanged.Broadcast(Item->Slot, nullptr);
+			{			
 				return true;
 			}
 		}
@@ -862,12 +873,11 @@ void AShooterProjectCharacter::UnEquipGear(const EEquippableSlot Slot)
 void AShooterProjectCharacter::EquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem)
 {
 	if (WeaponItem && WeaponItem->WeaponClass && HasAuthority())
-	{	
-			if (EquippedWeapon)
-			{
-				UnEquipWeapon(bInventoryOpen, WeaponItem);
-			}
-			
+	{
+		if (EquippedWeapon)
+		{
+			UnEquipWeapon(bInventoryOpen, WeaponItem);
+		}
 			//Spawn the weapon in
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.bNoFail = true;
@@ -880,7 +890,6 @@ void AShooterProjectCharacter::EquipWeapon(bool bInventoryOpen, class UWeaponIte
 				Weapon->Item = WeaponItem;
 				EquippedWeapon = Weapon;
 				OnRep_EquippedWeapon();
-
 				Weapon->OnEquip();
 			}
 	}
@@ -889,8 +898,8 @@ void AShooterProjectCharacter::EquipWeapon(bool bInventoryOpen, class UWeaponIte
 
 void AShooterProjectCharacter::UnEquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem)
 {
-	if (HasAuthority() && EquippedWeapon)
-	{	
+	if (EquippedWeapon && HasAuthority())
+	{
 		EquippedWeapon->OnUnEquip();
 		EquippedWeapon->Destroy();
 		EquippedWeapon = nullptr;
@@ -969,6 +978,17 @@ void AShooterProjectCharacter::CycleWeaponSights()
 {
 }
 
+void AShooterProjectCharacter::UnEquipTheWeapon()
+{
+	if (HasAuthority() && EquippedWeapon)
+	{	
+		EquippedWeapon->OnUnEquip();
+		EquippedWeapon->Destroy();
+		EquippedWeapon = nullptr;
+		OnRep_EquippedWeapon();	
+	}
+}
+
 void AShooterProjectCharacter::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon)
@@ -1001,18 +1021,19 @@ void AShooterProjectCharacter::StartReload()
 	}
 }
 
-float AShooterProjectCharacter::Play1PMontage(UAnimMontage* Montage)
+float AShooterProjectCharacter::Play1PAnimation(UAnimMontage* Animation)
 {
 	float Duration = 0.0f;
-	if (IsLocallyControlled())
-	{
-		UAnimInstance* AnimInstance = ArmsMesh1P->GetAnimInstance();
-		if (Montage && AnimInstance)
+	
+	if (ArmsMesh1P)
+	{	
+		UAnimInstance* AnimInstance = Get1PMesh()->GetAnimInstance();
+		if (AnimInstance)
 		{
-			Duration = AnimInstance->Montage_Play(Montage);
+			Duration = AnimInstance->Montage_Play(Animation);
 		}
 	}
-
+	
 	return Duration;
 }
 

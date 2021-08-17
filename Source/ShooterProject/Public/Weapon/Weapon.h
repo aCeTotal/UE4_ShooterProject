@@ -146,6 +146,10 @@ protected:
 
 
 
+
+	FTimerHandle EquipTimerHandle;
+
+
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Input
@@ -224,7 +228,13 @@ protected:
 	FHitScanConfiguration HitScanConfig;
 	
 
-public:	
+public:
+
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* Equip;
+
+	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
+	class UAnimMontage* UnEquip;
 
 	//Weapon mesh
 	UPROPERTY(EditAnywhere, Category = Components)
@@ -471,6 +481,9 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// TimerHandles
 
+	//EquipWeapon
+	FTimerHandle TimerHandle_Equip;
+
 	//Handle for efficient management of OnEquipFinished timer
 	FTimerHandle TimerHandle_OnEquipFinished;
 
@@ -575,12 +588,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
 	class UAnimMontage* FireAiming;
-
-	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
-	class UAnimMontage* Equip;
-
-	UPROPERTY(EditDefaultsOnly, Category = "1PAnimations")
-	class UAnimMontage* UnEquip;
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Weapon usage helpers

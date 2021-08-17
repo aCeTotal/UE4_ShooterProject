@@ -144,6 +144,9 @@ public:
 	UFUNCTION()
 	void ResetProneFix();
 
+	UPROPERTY(BlueprintReadWrite)
+	UUserWidget* InventoryWidget;
+
 
 protected:
 
@@ -276,7 +279,8 @@ protected:
 	FTimerHandle ProneToCrouchTimerHandle;
 	FTimerHandle ProneToStandTimerHandle;
 
-	FTimerHandle AnimationTimerHandle;
+	FTimerDelegate Equip_TimerDel;
+	FTimerHandle Equip_TimerHandle;
 
 public:
 	
@@ -312,8 +316,14 @@ public:
 	void EquipGear(class UGearItem* Gear);
 	void UnEquipGear(const EEquippableSlot Slot);
 
+	UFUNCTION()
 	void EquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem);
+
+	UFUNCTION()
 	void UnEquipWeapon(bool bInventoryOpen, class UWeaponItem* WeaponItem);
+
+	UPROPERTY()
+	AWeapon* OldWeapon;
 
 
 	UPROPERTY(BlueprintAssignable, Category = "Items")
@@ -330,6 +340,9 @@ public:
 
 
 protected:
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsInventoryOpen;
 
 	//Allows for efficient access of equipped item
 	UPROPERTY(VisibleAnywhere, Category = "Items")
@@ -360,14 +373,20 @@ public:
 
 	void StartReload();
 
+	//Play Weapon animations
+	float Play1PAnimation(UAnimMontage* Montage);
+
+	UPROPERTY(EditDefaultsOnly, Category = Animations)
+	class UAnimMontage* Equip;
+
+	UPROPERTY(EditDefaultsOnly, Category = Animations)
+	class UAnimMontage* UnEquip;
+
 	
 
 
 
 protected:
-
-	//Play Weapon animations
-	float Play1PMontage(UAnimMontage* Montage);
 	
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentSight)
 	UStaticMeshComponent* CurrentSight;
@@ -386,6 +405,9 @@ protected:
 
 	UFUNCTION()
 	void CycleWeaponSights();
+
+	UFUNCTION()
+	void UnEquipTheWeapon();
 
 	UPROPERTY()
 	class UStaticMeshComponent* NextSight;
