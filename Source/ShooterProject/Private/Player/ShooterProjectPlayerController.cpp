@@ -3,6 +3,7 @@
 
 #include "Player/ShooterProjectPlayerController.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Player/ShooterProjectCharacter.h"
 
 
@@ -16,6 +17,9 @@ void AShooterProjectPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	InputComponent->BindAction("Reload", IE_Pressed, this, &AShooterProjectPlayerController::StartReload);
+
+	InputComponent->BindAction("Fire", IE_Pressed, this, &AShooterProjectPlayerController::OnStartFire);
+	InputComponent->BindAction("Fire", IE_Released, this, &AShooterProjectPlayerController::OnStopFire);
 }
 
 void AShooterProjectPlayerController::Respawn()
@@ -56,6 +60,28 @@ void AShooterProjectPlayerController::StartReload()
 			Respawn();
 		}
 	}
+}
+
+void AShooterProjectPlayerController::OnStartFire()
+{
+	if (AShooterProjectCharacter* ShooterCharacter = Cast<AShooterProjectCharacter>(GetPawn()))
+	{
+		if (VerticalHotbarBoxRef && VerticalHotbarBoxRef->IsVisible())
+		{
+		}
+		else
+		{
+			ShooterCharacter->StartFire();
+		}
+	}	
+}
+
+void AShooterProjectPlayerController::OnStopFire()
+{
+	if (AShooterProjectCharacter* ShooterCharacter = Cast<AShooterProjectCharacter>(GetPawn()))
+	{
+		ShooterCharacter->StopFire();
+	}	
 }
 
 void AShooterProjectPlayerController::ClientShowNotification_Implementation(const FText& Message)

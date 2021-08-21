@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "Components/VerticalBox.h"
 #include "GameFramework/PlayerController.h"
 #include "ShooterProjectPlayerController.generated.h"
 
@@ -36,6 +38,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowInGameUI();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ClickHotbarButton();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void HideLootMenu();
 
@@ -49,5 +54,11 @@ public:
 	void ServerRespawn();
 
 	void StartReload();
+
+	void OnStartFire();
+	void OnStopFire();
+
+	UPROPERTY(BlueprintReadWrite)
+	UVerticalBox* VerticalHotbarBoxRef;
 	
 };

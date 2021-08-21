@@ -60,6 +60,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = Animations)
 	class UAnimMontage* UnEquipMontage;
+	
 
 protected:
 

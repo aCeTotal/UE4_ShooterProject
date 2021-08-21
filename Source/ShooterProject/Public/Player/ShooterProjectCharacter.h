@@ -373,6 +373,9 @@ public:
 
 	void StartReload();
 
+	void StartFire();
+	void StopFire();
+
 	//Play Weapon animations
 	float Play1PAnimation(UAnimMontage* Montage);
 
@@ -381,6 +384,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = Animations)
 	class UAnimMontage* UnEquip;
+
 
 	
 
@@ -414,9 +418,6 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
-
-	void StartFire();
-	void StopFire();
 
 	void BeginMeleeAttach();
 
